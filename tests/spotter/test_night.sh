@@ -13,7 +13,7 @@ ok() { echo "  ok: $1"; pass=$((pass + 1)); }
 bad() { echo "  FAIL: $1"; fail=$((fail + 1)); }
 
 export NIGHT_HOME=$tmp/spotter-night NIGHT_SQUAD=$tmp/tank_squad NIGHT_TREE=$tmp/tank_squad/spotter-night
-export NIGHT_IDLE_MIN=0 NIGHT_POLL_S=1 NIGHT_MAPS=terminus NIGHT_SEEDS_PER_BATCH=1 NIGHT_SEED_FIRST=1 NIGHT_SEED_LAST=2
+export NIGHT_IDLE_MIN=0 NIGHT_POLL_S=1 NIGHT_MAPS=terminus NIGHT_SEEDS_PER_BATCH=1 NIGHT_SEED_FIRST=1 NIGHT_SEED_LAST=2 NIGHT_SEED2_FIRST=3 NIGHT_SEED2_LAST=3
 mkdir -p "$NIGHT_SQUAD/other" "$NIGHT_HOME/kit/tools/spotter" "$NIGHT_HOME/kit/tests/spotter" "$NIGHT_HOME/kit/mk" "$NIGHT_SQUAD/.tools"
 echo kit0 >"$NIGHT_HOME/kit/.kit-commit"
 : >"$NIGHT_HOME/kit/mk/spotter.mk"
@@ -35,9 +35,20 @@ echo "night: an idle box runs batches until every seed is done"
 BATCH_SLEEP=0 timeout 60 "$night" tick
 c=$(ls "$day" 2>/dev/null | head -1)
 [ -s "$day/$c/fights/terminus-1.jsonl.gz" ] && [ -s "$day/$c/fights/terminus-2.jsonl.gz" ] && ok "two batches, fights gzipped" || bad "fights missing: $(ls -R "$day" 2>&1 | head)"
+[ -s "$day/$c/fights/terminus-3.jsonl.gz" ] && ok "then the extra seed range (S4)" || bad "extra seed 3 not run"
 [ -e "$day/$c/.complete" ] && ok "commit marked complete" || bad "no .complete"
 [ -s "$day/SUMMARY.md" ] && ok "SUMMARY.md written" || bad "no SUMMARY.md"
 [ "$(cut -d: -f1 "$NIGHT_TREE/.spotter-commit")" = "$(git -C "$src" rev-parse HEAD)" ] && ok "tree is the named commit" || bad "tree commit"
+
+echo "night: a commit's seeds done on an earlier day are not run again"
+old=$NIGHT_HOME/2000-01-01/$c
+mkdir -p "$old" && mv "$day/$c/fights" "$old/fights" && rm -rf "$day"
+BATCH_SLEEP=0 timeout 60 "$night" tick
+[ ! -d "$day/$c/fights" ] || [ -z "$(ls "$day/$c/fights" 2>/dev/null)" ] && ok "nothing re-run" || bad "re-ran: $(ls "$day/$c/fights")"
+rm -f "$old/fights/terminus-3.jsonl.gz"
+BATCH_SLEEP=0 timeout 60 "$night" tick
+[ -s "$day/$c/fights/terminus-3.jsonl.gz" ] && [ ! -e "$day/$c/fights/terminus-1.jsonl.gz" ] && ok "only the missing seed runs" || bad "seeds: $(ls "$day/$c/fights" 2>&1)"
+rm -rf "$NIGHT_HOME/2000-01-01"
 
 echo "night: a process in another folder makes it yield"
 rm -rf "$day"

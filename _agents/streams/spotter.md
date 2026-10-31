@@ -63,3 +63,64 @@ His 15 clips on batch 2's page (the controls) — no hurry.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-31 ~12:40 PDT, the spotter worker).** S1-S4 done; S5 waits for the first green main after a class fix merges;
+S6 waits on "fine" labels (none yet). Full check: see *Green* below.
+
+### Plan (order kept from the backlog; one-line reasons)
+1. S1 batch 2's numbers (done). 2. S2 the class rule + the before at df9aacc1a (done; the rule had to come first because S3 and S4
+read it). 3. S3 the owners' lists (done). 4. S4 the night shift follows main (done). 5. S5 his next page after the first class fix
+(waiting). 6. S6 learn.py v the hand ranker (blocked on fine labels). 7. Stretch: census requests (written below).
+
+### Done (every number: commit, machine, workload, n)
+- **S1 batch 2** (page db exported 2026-10-31 ~12:30 PDT into `references/round48/spotter/batch2-db.json`; `labels.py` now splits
+  his taps from `by: "assumed"`, gives precision by rank band and the controls' base rate; test_labels.py). Batch 2 = main 2fc962aa6,
+  builder3, 24 fights. **His own taps: 34/34 dumb** (rank 31-50: 15/15, 51-75: 17/17, 76-100: 2/2); 31 assumed (C48.4); 5 flagged + 10
+  controls untapped -> **base rate unknown** (he has not tapped a control). Classes from batch 2 in `references/round48/spotter/
+  batch2-classes.md`: the rule puts 47 of 70 flagged clips in a class (E 18, B 11, F 7, C 7, D 3, A 1), 23 none; controls 0/10 classed.
+- **S2 the class rule** `tools/spotter/classes.py` **classes v4** (= v3, A-E, + F placed last; **frozen this round**, R48.4: a change
+  re-reads df9aacc1a in the same commit). Fixed thresholds, written at the top of the file. Order A, E, stuck-by-cause, C, B, D, F:
+  A RETREAT >= 40 m from squad 3 s or reversing 5 s; E >= 5 of 8 s hit from beyond 1.05 x own range and not closing 10 m; STUCK
+  (move, > 15 m to go, < 1 m in 5 s, 6 s) goes to its cause (RETREAT A, crew blocker B, terrain / prop C, else D); C blocked by
+  terrain / no_path or on a prop 8 s; B blocked / yielding to a named crew 8 s, or a HOLD crew yielding 3 s; D nose > 100 deg off
+  route 5 s, or a follower reversing / spinning > 40 deg/s 3 s; F direct fire, fire-at-will, enemy in sight within 0.9 x range, no
+  shot >= 3 s, 8 s. B / E / F carry a cause split. Checked on batch 1 (1209a934f fights): 19 of his 30 hand-classed clips land in
+  their class (A 4/4, B 7/9, C 4/5, E 3/5, D 1/7: batch 1's follow rows carry no goal). Tests: test_classes.py (each threshold
+  caught, its near miss not; lesson 350).
+- **The BEFORE (C48.2): main df9aacc1a, builder3, 576 fights = seeds 13121-13216 x 6 maps, 240 s showmatch, native.** Moments /
+  flagged crew-s a fight: **A 0.14 / 0.5; E 5.58 / 23.3** (no answer 4.41, answering 1.17); **C 3.40 / 32.8; B 17.00 / 69.7** (held
+  crew gives way 11.63, parked blocker 0.81, moving squadmates 4.55); **D 5.14 / 11.6; F 1.64 / 7.0** (support by fire 0.79, holding
+  0.43, moving 0.27, ambush 0.16). By map: `references/round48/spotter/classes-df9aacc1a.md`. Baseline with per-fight counts (for
+  the paired read): `tools/spotter/baselines/classes-df9aacc1a.json`. Relayed by the orchestrator. Engage's own read on the same
+  fights is A 0.16 / E 0.70: A agrees; E is a different (broader) rule: any 5-of-8 s outranged exposure without a 10 m close,
+  including crews in transit on a MOVE.
+- **S3 lists** (`references/round48/spotter/`, df9aacc1a, 10 longest per class and per cause, each with `make spotter-clip` and its
+  per-second rows): `list-B.md` (rows carry the named blocker's own phase / move / order at that tick: manoeuvre's ask), `list-C.md`,
+  `list-AE.md`, `list-D.md`, `list-F.md`; built by `tools/spotter/class_lists.py` (`main` / `clips` modes).
+- **Findings sent:** NEW class F (holds fire, enemy in sight and in range; R48.6: engage). His judged B clips are 9/11 "moving
+  squadmates" while the main rate is mostly short "held crew gives way" (changed manoeuvre's next item). Candidates G (wanders off
+  alone: wrong way + far from squad) and H (shot from behind, doesn't turn: 7 clips) for his next page.
+- **S4 the night shift** (kit 9c446d11b installed on builder3): after each batch it runs the class rule over EVERY fight of the
+  commit (any date folder) and writes `<date>/<commit>/classes/` + a SUMMARY.md section, **paired v df9aacc1a** on the fights both
+  ran (after - before a fight, with se). A commit's finished seeds count across days (the same commit is never re-run on a new day);
+  once 13121-13216 is done it runs **13553-13744**. Proven: test_night.sh 18/0 (cross-day skip, extra range); on builder3 the class
+  step + summary over today's df9aacc1a folder (self-paired 0.00 on every class). `make spotter-night-pull` brings classes.* home.
+  Not yet seen: an unattended batch with the new kit (the box was busy with checks at install).
+
+### Waiting / blocked
+- **S5 (gate: first green main after a class fix merges):** then `make spotter-night-push SHA=<it>`, read its paired class rates,
+  and build his ~15-clip page: unflagged controls (~7) + 3-4 each of candidates G and H, blind, `judge_docs.py` (orchestrator's ask).
+- **S6 (blocked: labels):** 95 dumb (64 his + 31 assumed), **0 fine**. learn.py needs ~100 / 100; fine labels can only come from
+  his taps on controls / lower ranks. Each ~15-clip page adds at most ~7 negatives.
+
+### Questions for the lead
+- None blocking. His 15 clips on batch 2's page (the controls) are still the only read of the base rate.
+
+### Requests to other streams (through the orchestrator)
+- Stretch (census, game-side, not mine): per hit, the SHOOTER's crew name in the probe / his recordings' census (hit_dmg carries no
+  source; `src` is always ""), and the turret's bearing v its target's bearing per crew-second (would sharpen F: a turret that never
+  laid on the enemy v one that laid and didn't fire).
+
+### Merge notes
+- Spotter paths only: `tools/spotter/**`, `tests/spotter/**`, `mk/spotter.mk`, `_agents/streams/references/round48/spotter/**`,
+  this brief. No Makefile edit.

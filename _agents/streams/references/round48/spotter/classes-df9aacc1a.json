@@ -1,0 +1,270 @@
+{
+ "fights": 576,
+ "classes": {
+  "A": {
+   "name": "hurt crews retreat by abandoning the squad",
+   "owner": "engage",
+   "moments": 82,
+   "crew_seconds": 313,
+   "moments_per_fight": 0.142,
+   "crew_seconds_per_fight": 0.54
+  },
+  "E": {
+   "name": "shot from beyond its range, no answer",
+   "owner": "engage",
+   "moments": 3212,
+   "crew_seconds": 13440,
+   "moments_per_fight": 5.576,
+   "crew_seconds_per_fight": 23.33,
+   "by_cause": {
+    "no answer": {
+     "moments_per_fight": 4.411,
+     "crew_seconds_per_fight": 19.01
+    },
+    "answering": {
+     "moments_per_fight": 1.165,
+     "crew_seconds_per_fight": 4.32
+    }
+   }
+  },
+  "C": {
+   "name": "stuck on terrain / no path, never gives up",
+   "owner": "manoeuvre",
+   "moments": 1959,
+   "crew_seconds": 18862,
+   "moments_per_fight": 3.401,
+   "crew_seconds_per_fight": 32.75
+  },
+  "B": {
+   "name": "squadmates jam each other: give-way loops",
+   "owner": "manoeuvre",
+   "moments": 9789,
+   "crew_seconds": 40127,
+   "moments_per_fight": 16.995,
+   "crew_seconds_per_fight": 69.66,
+   "by_cause": {
+    "held crew gives way": {
+     "moments_per_fight": 11.635,
+     "crew_seconds_per_fight": 34.33
+    },
+    "parked blocker": {
+     "moments_per_fight": 0.809,
+     "crew_seconds_per_fight": 5.85
+    },
+    "moving squadmates": {
+     "moments_per_fight": 4.55,
+     "crew_seconds_per_fight": 29.49
+    }
+   }
+  },
+  "D": {
+   "name": "drives away from where it is going",
+   "owner": "orders",
+   "moments": 2961,
+   "crew_seconds": 6677,
+   "moments_per_fight": 5.141,
+   "crew_seconds_per_fight": 11.59
+  },
+  "F": {
+   "name": "holds fire with an enemy in sight and in range",
+   "owner": "engage",
+   "moments": 947,
+   "crew_seconds": 4017,
+   "moments_per_fight": 1.644,
+   "crew_seconds_per_fight": 6.97,
+   "by_cause": {
+    "support by fire": {
+     "moments_per_fight": 0.79,
+     "crew_seconds_per_fight": 3.34
+    },
+    "ambush (holds fire on purpose)": {
+     "moments_per_fight": 0.158,
+     "crew_seconds_per_fight": 0.58
+    },
+    "holding": {
+     "moments_per_fight": 0.429,
+     "crew_seconds_per_fight": 2.14
+    },
+    "moving": {
+     "moments_per_fight": 0.267,
+     "crew_seconds_per_fight": 0.91
+    }
+   }
+  }
+ },
+ "by_map": {
+  "crossing": {
+   "fights": 96,
+   "A": {
+    "moments_per_fight": 0.156,
+    "crew_seconds_per_fight": 0.36
+   },
+   "E": {
+    "moments_per_fight": 7.969,
+    "crew_seconds_per_fight": 36.42
+   },
+   "C": {
+    "moments_per_fight": 7.135,
+    "crew_seconds_per_fight": 140.95
+   },
+   "B": {
+    "moments_per_fight": 27.292,
+    "crew_seconds_per_fight": 138.51
+   },
+   "D": {
+    "moments_per_fight": 9.26,
+    "crew_seconds_per_fight": 22.07
+   },
+   "F": {
+    "moments_per_fight": 1.594,
+    "crew_seconds_per_fight": 6.9
+   }
+  },
+  "gorge": {
+   "fights": 96,
+   "A": {
+    "moments_per_fight": 0.062,
+    "crew_seconds_per_fight": 0.1
+   },
+   "E": {
+    "moments_per_fight": 4.427,
+    "crew_seconds_per_fight": 17.22
+   },
+   "C": {
+    "moments_per_fight": 1.948,
+    "crew_seconds_per_fight": 7.8
+   },
+   "B": {
+    "moments_per_fight": 11.635,
+    "crew_seconds_per_fight": 40.49
+   },
+   "D": {
+    "moments_per_fight": 2.406,
+    "crew_seconds_per_fight": 6.26
+   },
+   "F": {
+    "moments_per_fight": 1.281,
+    "crew_seconds_per_fight": 4.72
+   }
+  },
+  "locks": {
+   "fights": 96,
+   "A": {
+    "moments_per_fight": 0.219,
+    "crew_seconds_per_fight": 1.01
+   },
+   "E": {
+    "moments_per_fight": 6.427,
+    "crew_seconds_per_fight": 25.89
+   },
+   "C": {
+    "moments_per_fight": 3.615,
+    "crew_seconds_per_fight": 12.7
+   },
+   "B": {
+    "moments_per_fight": 22.594,
+    "crew_seconds_per_fight": 93.53
+   },
+   "D": {
+    "moments_per_fight": 7.521,
+    "crew_seconds_per_fight": 17.41
+   },
+   "F": {
+    "moments_per_fight": 1.396,
+    "crew_seconds_per_fight": 6.74
+   }
+  },
+  "parade": {
+   "fights": 96,
+   "A": {
+    "moments_per_fight": 0.177,
+    "crew_seconds_per_fight": 0.9
+   },
+   "E": {
+    "moments_per_fight": 4.812,
+    "crew_seconds_per_fight": 20.43
+   },
+   "C": {
+    "moments_per_fight": 2.0,
+    "crew_seconds_per_fight": 10.57
+   },
+   "B": {
+    "moments_per_fight": 8.333,
+    "crew_seconds_per_fight": 23.15
+   },
+   "D": {
+    "moments_per_fight": 2.448,
+    "crew_seconds_per_fight": 4.15
+   },
+   "F": {
+    "moments_per_fight": 1.24,
+    "crew_seconds_per_fight": 4.44
+   }
+  },
+  "sumps": {
+   "fights": 96,
+   "A": {
+    "moments_per_fight": 0.167,
+    "crew_seconds_per_fight": 0.74
+   },
+   "E": {
+    "moments_per_fight": 5.583,
+    "crew_seconds_per_fight": 24.39
+   },
+   "C": {
+    "moments_per_fight": 3.073,
+    "crew_seconds_per_fight": 14.09
+   },
+   "B": {
+    "moments_per_fight": 17.812,
+    "crew_seconds_per_fight": 75.14
+   },
+   "D": {
+    "moments_per_fight": 4.844,
+    "crew_seconds_per_fight": 9.61
+   },
+   "F": {
+    "moments_per_fight": 2.656,
+    "crew_seconds_per_fight": 12.31
+   }
+  },
+  "terminus": {
+   "fights": 96,
+   "A": {
+    "moments_per_fight": 0.073,
+    "crew_seconds_per_fight": 0.15
+   },
+   "E": {
+    "moments_per_fight": 4.24,
+    "crew_seconds_per_fight": 15.67
+   },
+   "C": {
+    "moments_per_fight": 2.635,
+    "crew_seconds_per_fight": 10.36
+   },
+   "B": {
+    "moments_per_fight": 14.302,
+    "crew_seconds_per_fight": 47.18
+   },
+   "D": {
+    "moments_per_fight": 4.365,
+    "crew_seconds_per_fight": 10.05
+   },
+   "F": {
+    "moments_per_fight": 1.698,
+    "crew_seconds_per_fight": 6.74
+   }
+  }
+ },
+ "rule": "classes v4 (2026-10-31; v3 + F, A-E unchanged)",
+ "label": "main df9aacc1a, builder3, CPU-v-CPU showmatch 240 s, native",
+ "seeds": "13121-13216 (96)",
+ "maps": [
+  "crossing",
+  "gorge",
+  "locks",
+  "parade",
+  "sumps",
+  "terminus"
+ ]
+}

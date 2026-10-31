@@ -253,6 +253,24 @@ static func _scale_for(row: Array, width: float, depth: float) -> float:
 	return scale
 
 
+## Round 48 (native N5, R47.18): the layout's standable queries always read THIS arena's baked navmesh. An arena bakes in its
+## _ready and the navigation server publishes the map at its next sync, so a doctrine army deployed in the same frame found no
+## map and laid every slot unchecked (ARMY_LAYOUT_UNCHECKED), while a start that let one physics frame pass laid them checked:
+## the spawn layout depended on WHEN the first sync landed (an interactive start v a headless one, CP43.0). Now a map that holds
+## baked navmesh but is not published yet is synced once, here, so every start lays checked slots. `--layout-sync=off` is round 47's.
+static var LAYOUT_SYNC := not OS.get_cmdline_user_args().has("--layout-sync=off")
+
+
+static func _sync_navigation(node: Node3D) -> void:
+	if not LAYOUT_SYNC or node == null or not node.is_inside_tree() or not Pathing.enabled:
+		return
+	var map := node.get_world_3d().navigation_map
+	# Not "has regions": the arena's region joins the map by a queued server command, so the map lists none until a sync, and
+	# map_force_update is what flushes that queue (round 48: the guard left all 20 same-frame slots unchecked, builder3 baed43f15).
+	if not Pathing.is_ready(node):
+		NavigationServer3D.map_force_update(map)
+
+
 ## Lay out `team`'s squads, at the start of the match only (a doctrine loaded later, mid-match, is left where it spawns).
 ## Called by Match.load_doctrine right after the army spawns, so a test that places its tanks afterwards still can.
 static func deploy(game_match: Match, team: int) -> void:
@@ -283,6 +301,8 @@ static func deploy(game_match: Match, team: int) -> void:
 					TacticsFormation.flat(-other.global_basis.z)])
 	var names: Array = laid.keys()
 	names.sort()
+	if not names.is_empty():
+		_sync_navigation(by_name.get(names[0]) as Tank)
 	var unchecked_before := SlotGround.unchecked
 	for unit_name: String in names:
 		var tank := by_name.get(unit_name) as Tank

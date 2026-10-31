@@ -62,8 +62,82 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
 - **R48.3 Spotter batch 2:** he tapped 34 (all flagged, all "dumb"); 31 of the rest are labelled dumb by assumption (C48.4); 15 stay on
   his page (the 10 controls + 5 flagged, blind).
 
+- **R48.4 The round's "before" (C48.2), spotter S2:** main df9aacc1a, builder3, the night's 576 fights (13121-13216 x terminus crossing
+  locks sumps gorge parade, 240 s showmatch, native), rule `tools/spotter/classes.py` "classes v3" (frozen this round; a rule change
+  re-reads df9aacc1a in the same commit). Per fight, moments / flagged crew-s: **A** 0.14 / 0.5; **E** 5.58 / 23.3 (no answer 4.41,
+  answering 1.17; 1526 of 2541 no-answer moments end on a plain MOVE); **C** 3.40 / 32.8; **B** 17.00 / 69.7 (held crew gives way 11.63 /
+  34.3, parked blocker 0.81 / 5.8, moving squadmates 4.55 / 29.5); **D** 5.14 / 11.6. Batch-1 agreement 19 / 30 (A 4/4, B 7/9, C 4/5, E
+  3/5, D 1/7: follow rows carried no goal). Engage's own E1 read (same tree, batch 1's 12 fights, default v `--outranged=off`): A 0 v 9,
+  E 4 v 16 — E10 already removes class A. Manoeuvre's M1: class B's causes = a parked crew giving way in place, and held crews leaving
+  their posts to give way (musical chairs); M2 `heldpost` built.
+
+- **R48.5 GRANT native (N3, the same-process carry-over):** `game/main.gd` `Main._enter_tree()` only (a fresh root World3D per match,
+  `--fresh-world=off` the escape), `game/ui/game_launcher.gd` `GameLauncher.start()` as the fallback site, and `tests/run_tests.gd`'s
+  per-FILE reset (harness only; it removes R47.47's history dependence). Conditions: no engine error lines (check's engine gate), the
+  sim-baseline unmoved (a first match already starts on a fresh world), and a rematch test that is identical tick for tick to a first
+  match. Ships ON when green; the orchestrator tells manoeuvre for M6.
+
+- **R48.6 Spotter S3 (stream/spotter 2f94f0409, `_agents/streams/references/round48/spotter/list-*.md`, main df9aacc1a, 576 fights):
+  a NEW class F, holds fire with an enemy in sight and in range (21 of batch 2's 70 flagged clips, 5-66 s; 1.64 moments a fight at
+  main; support / base of fire 0.79, spring ambush 0.16 on purpose) -> **engage owns F** (his Crossing "his side barely fires"), after
+  E2 / E3, before E4. Classes v4 = v3 + F last (A-E identical). **His batch-2 B clips are mostly moving squadmates jammed 8 s+** (9 of 11)
+  while B's rate is mostly short held-crew give-ways (11.63 of 17.00): heldpost (Bar B) runs as filed, then manoeuvre's M2b = the
+  moving-squadmates jam (4.55 / 29.5 a fight) ahead of M4 / M5. Candidate classes G (wanders off alone) and H (shot from behind, no turn)
+  go on his next ~15-clip page with the controls.
+
+- **R48.7 GRANT native (N4, the laptop fog's ~2 ms):** `game/match/visibility_field.gd` a `draw_picture := true` member read in place of
+  `SimProfile.switched_off("visfield_draw")` in `_finish_refresh` (default behaviour identical), and `game/theme/fx/bench/perf_scene.gd` a
+  `no_visdraw` layer (measurement only). The fix that may follow (dirty-rect texture update or a lower-rate picture on the laptop
+  preset) must be output-identical on screen apart from timing, and a laptop-preset cut ships as a hardware preset (memory). N2
+  (contacts in C++) stays OFF: the in-run A/B reads the C++ arm slower in 11 of 12 blocks though the call is 27 % faster.
+
+- **R48.8 N4 read and the next native item.** Laptop UHD 620, lock held, his Crossing seed 101, laptop preset, stream/native 4c01aa748,
+  `--native-tick-profile` 8-40 s (329 frames, 2.91 ticks a frame, 39 -> 32 crews): the fog PICTURE (blits + texture.update) is 0.23 ms a
+  refresh, ~0.03 ms a frame — not the ~2 ms; no dirty-rect fix. The field's RAYS are 0.376 of its 0.466 ms a tick (~1.1 ms a frame on
+  his laptop, the biggest piece). In-run frame A/B noise ~±7 ms on the loaded laptop: frame reads cannot resolve < ~5 ms there; price
+  with the tick profile. **GRANT native the ray function of `game/match/visibility_field.gd` as a C++ seam** (GDScript body kept as the
+  fallback), output-identical with a VERIFY in check, priced with the same tick profile; ON when EQUAL and faster (memory: core in C++).
+
+- **R48.9 The CPU move <-> hold order flap (manoeuvre found it, orders traced it) is ENGAGE's.** Crossing 13216 Rust_Hunters_4 / 2,
+  ticks 1757-1775 (stream/orders b50b34aa2, builder3, n 1, `make order-flap-trace FLAP_FLAGS=--follow-station=nose`): the ELEMENT's
+  3-tick update alternates a facing `move` far west and a verb-less `hold` (element.gd ~1981: an `attack` desired with no target becomes
+  `hold`, `to` erased), a new Orders id each time. Fix the target-less attack in element_plan's engagement choice, or a narrow guard in
+  element.gd's re-issue; after Bar E11's run, before E3.
+
 ### Bars (round 48)
 _(filed by each stream before any number)_
+
+- **Bar B (manoeuvre, heldpost; FILED 2026-10-31 before any number; text in stream/manoeuvre's brief Status).** Change: a held crew at
+  its post refuses give-way asks and offers the pass lane; a parked crew refuses instead of holding in place. Arms: OFF
+  `--traffic-off=heldpost --brains-off=native_yield` v ON default (both GDScript yield: the rule is the only difference). W1 = 48 CPU
+  feature-probe fights an arm, builder3, seed 13217+i on map i mod 6. **Deciding:** D1 jam_s (yielding / blocked-by-friendly crew-s) a
+  fight, paired ON-OFF mean < 0 and z <= -2; D2 the staged test green. **Guards:** G1 the asker's wait on a held crew heldwait_s mean <=
+  +5, z < +2; G2 friendly-contact s; G3 noprog_s; G4 survivors each team; G5 holdyield 12328 post drift <= 1.0 m; G6 authority probe
+  13019-13024 hold / stop moved_m ON <= OFF + 0.5; G7 group probe all_in_s / never_in; G8 full check green. Judge mutation self-test
+  (lesson 350); replay stamp entry in the same commit (lesson 354). Spotter's class B rate is the regression read, never this bar (C48.2).
+- **Bar F (orders O1, the follow station by heading of travel; FILED 2026-10-31 ~12:55 before any number on 13409-13456; full text
+  in stream/orders b50b34aa2's workstreams.md, which merges into this section).** Arms ON default v `--follow-station=nose`; `make
+  follow-bar`, 6 maps x 13409-13416 = 48 paired fights. **Deciding:** D1 follow reverse-or-spin crew-s a fight, mean + 2 se < 0 and
+  >= 20 % of OFF; D2 locks 13216 #17 Rust_Guns_2 36-46 s ON fewer. **Guards:** follow distance, squad distance, every crew's reverse /
+  spin s, contacts, noprog_s, the group click (orders-probe 13417-13420, ON v nose), authority tests green. Only number seen before
+  filing: one dev read (7001, n 1 a map, builder3, 7787853ff) 7.5 v 10.3 s a fight. No twin needed (the station is GDScript); replay
+  stamp `follow_travel` in the same commit.
+  **VERDICT (2026-10-31, b50b34aa2, builder3, 48 paired fights, all complete): FAIL D1** — follow reverse-or-spin s a fight ON - OFF
+  +0.40 (se 0.56), 4.15 v 3.75; every guard passes (to_go +1.0 se 2.0, squad +0.97 se 0.79, all reverse -1.3 se 8.0, spin -1.8 se 6.0,
+  contacts -2.0 se 2.4, noprog -4.6 se 8.6). Following is rare on these seeds (~18 follow crew-s a fight). Cause read: leaders crawl at
+  0-1.5 m/s while turning 40-70 deg/s, and v1's travel heading followed every crawl. O1 NOT merged; v2 97e70b68a (travel above 3 m/s only,
+  heading turn capped at 30 deg/s) goes to amendment 1 on fresh seeds.
+  **Amendment 1 (FILED on stream/orders 462f685a0 before any number on 13421-13452; v2 97e70b68a).** Decider = `make follow-drill`: a
+  leader on pivot / zigzag / turn routes with three brain followers on wedge slots, 3 drills x 13421-13452 = 96 pairs, ON v nose; D1
+  follower reverse-or-spin s a run, mean + 2 se < 0 and <= -20 %. Guards: the turn drill not worse, station distance, the leader's route
+  time, spotter fights 6 maps x 13437-13444 (fix_s <= 0 + 2 se), group click, authority. D2 reported only (#17 no longer follows at main).
+  Dev read before filing on 7001-7006 only (18 pairs, builder3): -5.8 s a run (se 3.1), 10.5 v 16.3; pivot spin 4.0 v 15.0 s.
+- **Bar E11 RETREAT DRIVES (engage E2; FILED 2026-10-31 ~14:10 before any number on 13313-13360; full text in stream/engage's
+  workstreams.md).** `--retreat-drive` ON (`=off` = E10's game): a RETREAT move > 12 m drives forward and carries a facing, so
+  `Manoeuvre.choose` routes it nose first; a shorter hop under fire still backs off; destinations E10's; scoring untouched. W1 hurt
+  outranged probe, W2 healthy, seeds 13313-13360; W3 48 spotter fights (6 maps x 13313-13320) read by `tests/engage/class_ae.py`.
+  **Deciding:** D1 W1 reverse_m ON <= 0.5 x OFF; D2 W3 RETREAT reversing crew-s ON <= 0.5 x OFF; D3 W3 class A crew-s ON <= OFF; D4
+  retreat_m_mean no farther from squad. **Guards:** crews lost, out_damage, friendly hits, authority 24/24, E10's D1, full check green.
 
 ## Round 47: seven streams + spotter (prepared 2026-10-30 evening; CLOSED 2026-10-31; briefs in `streams/archive/round47/`)
 

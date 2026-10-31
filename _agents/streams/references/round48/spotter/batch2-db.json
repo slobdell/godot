@@ -1,0 +1,3639 @@
+{
+ "exported": "2026-10-31 ~12:30 PDT, ArtifactData list of https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9 (clips, labels)",
+ "clips": [
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Rust_Guns_2",
+   "drift_m": 0.04,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 5,
+   "rank": 105,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=crossing SPOT_CREW=Rust_Guns_2 SPOT_FROM=121 SPOT_TO=129",
+   "score": 2.36,
+   "seconds": "121-129 s",
+   "seed": 13121,
+   "signals": [],
+   "signals_max": {
+    "holdfire_s": 1
+   },
+   "surprise_max": {
+    "holdfire_s": 0.863
+   },
+   "team": 1,
+   "unit": "tank",
+   "video_id": "6f81bf3263db039afbb20e1787624b4e",
+   "video_url": "/_blob/6f81bf3263db039afbb20e1787624b4e",
+   "id": "crossing-13121-Rust_Guns_2-121-129"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_2",
+   "drift_m": 0.02,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 25,
+   "rank": 83,
+   "reasons": [
+    "pressed against a wall or prop (2 s)",
+    "no progress toward its goal (6 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=crossing SPOT_CREW=Rust_Hunters_2 SPOT_FROM=53 SPOT_TO=62",
+   "score": 7.1,
+   "seconds": "53-62 s",
+   "seed": 13121,
+   "signals": [
+    "wall_s",
+    "noprog_s"
+   ],
+   "signals_max": {
+    "noprog_s": 6,
+    "wall_s": 2
+   },
+   "surprise_max": {
+    "noprog_s": 2.143,
+    "wall_s": 3.668
+   },
+   "team": 1,
+   "unit": "ifv",
+   "video_id": "830c3a9c4b7519c134d88dd16457edff",
+   "video_url": "/_blob/830c3a9c4b7519c134d88dd16457edff",
+   "id": "crossing-13121-Rust_Hunters_2-53-62"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes_2",
+   "drift_m": 0.07,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 21,
+   "rank": 72,
+   "reasons": [
+    "hit from beyond its own range (6 s)",
+    "taking fire from behind (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=crossing SPOT_CREW=Green_Eyes_2 SPOT_FROM=50 SPOT_TO=59",
+   "score": 7.24,
+   "seconds": "50-59 s",
+   "seed": 13122,
+   "signals": [
+    "outranged_s",
+    "rearfire_s"
+   ],
+   "signals_max": {
+    "outranged_s": 6,
+    "rearfire_s": 3
+   },
+   "surprise_max": {
+    "outranged_s": 3.364,
+    "rearfire_s": 2.586
+   },
+   "team": 0,
+   "unit": "law_scout",
+   "video_id": "2503e2aea9cf1e5145d335543234eac9",
+   "video_url": "/_blob/2503e2aea9cf1e5145d335543234eac9",
+   "id": "crossing-13122-Green_Eyes_2-50-59"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "ENGAGE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Guns_2",
+   "drift_m": 0.03,
+   "length_s": 21,
+   "machine": "builder3",
+   "order": 62,
+   "rank": 89,
+   "reasons": [
+    "far from its squad (72.2 m)",
+    "enemy in sight and in range, not firing (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=crossing SPOT_CREW=Green_Guns_2 SPOT_FROM=19 SPOT_TO=29",
+   "score": 7.04,
+   "seconds": "19-29 s",
+   "seed": 13122,
+   "signals": [
+    "spread_m",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 4,
+    "spread_m": 72.2
+   },
+   "surprise_max": {
+    "holdfire_s": 1.663,
+    "spread_m": 3.803
+   },
+   "team": 0,
+   "unit": "law_tank",
+   "video_id": "61535de4f0e678c89b9dfbb9a83d80f6",
+   "video_url": "/_blob/61535de4f0e678c89b9dfbb9a83d80f6",
+   "id": "crossing-13122-Green_Guns_2-19-29"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_4",
+   "drift_m": 0.04,
+   "length_s": 203,
+   "machine": "builder3",
+   "order": 66,
+   "rank": 43,
+   "reasons": [
+    "blocked by a friendly (203 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=crossing SPOT_CREW=Green_Hunters_4 SPOT_FROM=232 SPOT_TO=242",
+   "score": 7.77,
+   "seconds": "232-242 s",
+   "seed": 13122,
+   "signals": [
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 203
+   },
+   "surprise_max": {
+    "friend_s": 3.933
+   },
+   "team": 0,
+   "unit": "law_ifv",
+   "video_id": "581eadb6fa0ff69f76bece7e26113cda",
+   "video_url": "/_blob/581eadb6fa0ff69f76bece7e26113cda",
+   "id": "crossing-13122-Green_Hunters_4-232-242"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Rust_Spears2_5",
+   "drift_m": 0.05,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 64,
+   "rank": 110,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=crossing SPOT_CREW=Rust_Spears2_5 SPOT_FROM=27 SPOT_TO=35",
+   "score": 1.5,
+   "seconds": "27-35 s",
+   "seed": 13122,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 1,
+   "unit": "gang_scout",
+   "video_id": "3d29fb696ad9e38f3a2a560fa0e79388",
+   "video_url": "/_blob/3d29fb696ad9e38f3a2a560fa0e79388",
+   "id": "crossing-13122-Rust_Spears2_5-27-35"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_2",
+   "drift_m": 0.01,
+   "length_s": 51,
+   "machine": "builder3",
+   "order": 26,
+   "rank": 50,
+   "reasons": [
+    "blocked by a friendly (51 s)",
+    "taking fire from behind (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=crossing SPOT_CREW=Green_Hunters_2 SPOT_FROM=58 SPOT_TO=68",
+   "score": 7.57,
+   "seconds": "58-68 s",
+   "seed": 13123,
+   "signals": [
+    "friend_s",
+    "rearfire_s"
+   ],
+   "signals_max": {
+    "friend_s": 51,
+    "rearfire_s": 4
+   },
+   "surprise_max": {
+    "friend_s": 2.941,
+    "rearfire_s": 2.639
+   },
+   "team": 0,
+   "unit": "syn_ifv",
+   "video_id": "b4866ff5f94cf505d838f7845c300d55",
+   "video_url": "/_blob/b4866ff5f94cf505d838f7845c300d55",
+   "id": "crossing-13123-Green_Hunters_2-58-68"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Lances_3",
+   "drift_m": 0.01,
+   "length_s": 14,
+   "machine": "builder3",
+   "order": 46,
+   "rank": 37,
+   "reasons": [
+    "blocked by a friendly (13 s)",
+    "enemy in sight and in range, not firing (9 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=crossing SPOT_CREW=Green_Lances_3 SPOT_FROM=40 SPOT_TO=50",
+   "score": 7.87,
+   "seconds": "40-50 s",
+   "seed": 13123,
+   "signals": [
+    "friend_s",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "friend_s": 13,
+    "holdfire_s": 9
+   },
+   "surprise_max": {
+    "friend_s": 3.37,
+    "holdfire_s": 3.37
+   },
+   "team": 0,
+   "unit": "syn_lancer",
+   "video_id": "2db0c504dfbcc2c9b858efe6da20ce34",
+   "video_url": "/_blob/2db0c504dfbcc2c9b858efe6da20ce34",
+   "id": "crossing-13123-Green_Lances_3-40-50"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_3",
+   "drift_m": 0.06,
+   "length_s": 24,
+   "machine": "builder3",
+   "order": 54,
+   "rank": 32,
+   "reasons": [
+    "no progress toward its goal (20 s)",
+    "reversing on a move order (11 s)",
+    "driving away from its route (3 s)",
+    "blocked by a friendly (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=crossing SPOT_CREW=Rust_Guns_3 SPOT_FROM=30 SPOT_TO=40",
+   "score": 8.05,
+   "seconds": "30-40 s",
+   "seed": 13123,
+   "signals": [
+    "noprog_s",
+    "reverse_s",
+    "wrongway_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 4,
+    "noprog_s": 20,
+    "reverse_s": 11,
+    "spread_m": 32.6,
+    "wrongway_s": 3
+   },
+   "surprise_max": {
+    "friend_s": 1.873,
+    "noprog_s": 3.803,
+    "reverse_s": 3.104,
+    "spread_m": 1.261,
+    "wrongway_s": 2.803
+   },
+   "team": 1,
+   "unit": "law_tank",
+   "video_id": "239b9c098f898af2fea95356cdf9cbcc",
+   "video_url": "/_blob/239b9c098f898af2fea95356cdf9cbcc",
+   "id": "crossing-13123-Rust_Guns_3-30-40"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Green_Eyes_2",
+   "drift_m": 0.03,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 48,
+   "rank": 109,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=crossing SPOT_CREW=Green_Eyes_2 SPOT_FROM=173 SPOT_TO=181",
+   "score": 1.5,
+   "seconds": "173-181 s",
+   "seed": 13124,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 0,
+   "unit": "scout",
+   "video_id": "4a2fb6314d6763d5fcc070ed1b20cc97",
+   "video_url": "/_blob/4a2fb6314d6763d5fcc070ed1b20cc97",
+   "id": "crossing-13124-Green_Eyes_2-173-181"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes II_1",
+   "drift_m": 0.01,
+   "length_s": 17,
+   "machine": "builder3",
+   "order": 65,
+   "rank": 44,
+   "reasons": [
+    "no progress toward its goal (14 s)",
+    "blocked by a friendly (17 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=crossing SPOT_CREW=Green_Eyes II_1 SPOT_FROM=118 SPOT_TO=128",
+   "score": 7.71,
+   "seconds": "118-128 s",
+   "seed": 13124,
+   "signals": [
+    "noprog_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 17,
+    "noprog_s": 14
+   },
+   "surprise_max": {
+    "friend_s": 2.02,
+    "noprog_s": 3.647
+   },
+   "team": 0,
+   "unit": "scout",
+   "video_id": "7f0fb3827073300d68dcd37f08f186f4",
+   "video_url": "/_blob/7f0fb3827073300d68dcd37f08f186f4",
+   "id": "crossing-13124-Green_Eyes_II_1-118-128"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes II_7",
+   "drift_m": 0.02,
+   "length_s": 16,
+   "machine": "builder3",
+   "order": 24,
+   "rank": 88,
+   "reasons": [
+    "far from its squad (102.1 m)",
+    "turning on the spot (35.9 deg/s)",
+    "reversing on a move order (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=crossing SPOT_CREW=Green_Eyes II_7 SPOT_FROM=192 SPOT_TO=202",
+   "score": 7.06,
+   "seconds": "192-202 s",
+   "seed": 13124,
+   "signals": [
+    "spread_m",
+    "spin_dps",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "reverse_s": 3,
+    "spin_dps": 35.9,
+    "spread_m": 102.1
+   },
+   "surprise_max": {
+    "reverse_s": 1.836,
+    "spin_dps": 2.425,
+    "spread_m": 3.082
+   },
+   "team": 0,
+   "unit": "scout",
+   "video_id": "ecaf2a4e2401b85f68e5b0e3639f9759",
+   "video_url": "/_blob/ecaf2a4e2401b85f68e5b0e3639f9759",
+   "id": "crossing-13124-Green_Eyes_II_7-192-202"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_2",
+   "drift_m": 0.06,
+   "length_s": 19,
+   "machine": "builder3",
+   "order": 57,
+   "rank": 98,
+   "reasons": [
+    "far from its squad (86.3 m)",
+    "driving away from its route (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=crossing SPOT_CREW=Green_Hunters_2 SPOT_FROM=90 SPOT_TO=100",
+   "score": 6.94,
+   "seconds": "90-100 s",
+   "seed": 13124,
+   "signals": [
+    "spread_m",
+    "wrongway_s"
+   ],
+   "signals_max": {
+    "spread_m": 86.3,
+    "wrongway_s": 4
+   },
+   "surprise_max": {
+    "spread_m": 2.969,
+    "wrongway_s": 2.401
+   },
+   "team": 0,
+   "unit": "ifv",
+   "video_id": "f30914922767b7238b526b92d3c7a053",
+   "video_url": "/_blob/f30914922767b7238b526b92d3c7a053",
+   "id": "crossing-13124-Green_Hunters_2-90-100"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters II_5",
+   "drift_m": 0.04,
+   "length_s": 28,
+   "machine": "builder3",
+   "order": 70,
+   "rank": 79,
+   "reasons": [
+    "far from its squad (88.3 m)",
+    "blocked by a friendly (5 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=crossing SPOT_CREW=Green_Hunters II_5 SPOT_FROM=44 SPOT_TO=54",
+   "score": 7.17,
+   "seconds": "44-54 s",
+   "seed": 13124,
+   "signals": [
+    "spread_m",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 5,
+    "spread_m": 88.3
+   },
+   "surprise_max": {
+    "friend_s": 1.698,
+    "spread_m": 3.27
+   },
+   "team": 0,
+   "unit": "ifv",
+   "video_id": "2a07d68e2f690b14dfb9e54a42918ce7",
+   "video_url": "/_blob/2a07d68e2f690b14dfb9e54a42918ce7",
+   "id": "crossing-13124-Green_Hunters_II_5-44-54"
+  },
+  {
+   "arena": "crossing",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_5",
+   "drift_m": 0.03,
+   "length_s": 29,
+   "machine": "builder3",
+   "order": 18,
+   "rank": 97,
+   "reasons": [
+    "far from its squad (69.6 m)",
+    "taking fire from behind (5 s)",
+    "hit from beyond its own range (3 s)",
+    "reversing on a move order (7 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=crossing SPOT_CREW=Rust_Guns_5 SPOT_FROM=31 SPOT_TO=41",
+   "score": 6.97,
+   "seconds": "31-41 s",
+   "seed": 13124,
+   "signals": [
+    "spread_m",
+    "rearfire_s",
+    "outranged_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "friend_s": 3,
+    "holdfire_s": 17,
+    "noprog_s": 4,
+    "outranged_s": 3,
+    "rearfire_s": 5,
+    "reverse_s": 7,
+    "spread_m": 69.6
+   },
+   "surprise_max": {
+    "friend_s": 1.072,
+    "holdfire_s": 1.511,
+    "noprog_s": 1.477,
+    "outranged_s": 1.864,
+    "rearfire_s": 2.199,
+    "reverse_s": 1.786,
+    "spread_m": 3.171
+   },
+   "team": 1,
+   "unit": "gang_tank",
+   "video_id": "fd66a613f8480345c5d115fcb10b32ec",
+   "video_url": "/_blob/fd66a613f8480345c5d115fcb10b32ec",
+   "id": "crossing-13124-Rust_Guns_5-31-41"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Guns_1",
+   "drift_m": 0.03,
+   "length_s": 12,
+   "machine": "builder3",
+   "order": 72,
+   "rank": 65,
+   "reasons": [
+    "hit from beyond its own range (11 s)",
+    "reversing on a move order (12 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=gorge SPOT_CREW=Green_Guns_1 SPOT_FROM=46 SPOT_TO=56",
+   "score": 7.38,
+   "seconds": "46-56 s",
+   "seed": 13121,
+   "signals": [
+    "outranged_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "outranged_s": 11,
+    "reverse_s": 12,
+    "spread_m": 31.9
+   },
+   "surprise_max": {
+    "outranged_s": 2.928,
+    "reverse_s": 2.659,
+    "spread_m": 0.774
+   },
+   "team": 0,
+   "unit": "gang_tank",
+   "video_id": "996d475b65c97667aed3c33a451a60a2",
+   "video_url": "/_blob/996d475b65c97667aed3c33a451a60a2",
+   "id": "gorge-13121-Green_Guns_1-46-56"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Guns_5",
+   "drift_m": 0.02,
+   "length_s": 21,
+   "machine": "builder3",
+   "order": 31,
+   "rank": 100,
+   "reasons": [
+    "reversing on a move order (21 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=gorge SPOT_CREW=Green_Guns_5 SPOT_FROM=20 SPOT_TO=30",
+   "score": 6.93,
+   "seconds": "20-30 s",
+   "seed": 13121,
+   "signals": [
+    "reverse_s"
+   ],
+   "signals_max": {
+    "reverse_s": 21,
+    "spread_m": 28.6
+   },
+   "surprise_max": {
+    "reverse_s": 4.074,
+    "spread_m": 0.66
+   },
+   "team": 0,
+   "unit": "gang_tank",
+   "video_id": "d426ed399a01f99db181100c0ff1b6d9",
+   "video_url": "/_blob/d426ed399a01f99db181100c0ff1b6d9",
+   "id": "gorge-13121-Green_Guns_5-20-30"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Burners2_3",
+   "drift_m": 0.04,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 55,
+   "rank": 62,
+   "reasons": [
+    "taking fire from behind (4 s)",
+    "sitting still under fire, not shooting back (2 s)",
+    "hit from beyond its own range (6 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=gorge SPOT_CREW=Rust_Burners2_3 SPOT_FROM=58 SPOT_TO=67",
+   "score": 7.39,
+   "seconds": "58-67 s",
+   "seed": 13121,
+   "signals": [
+    "rearfire_s",
+    "idlehit_s",
+    "outranged_s"
+   ],
+   "signals_max": {
+    "idlehit_s": 2,
+    "outranged_s": 6,
+    "rearfire_s": 4
+   },
+   "surprise_max": {
+    "idlehit_s": 3.015,
+    "outranged_s": 2.86,
+    "rearfire_s": 3.082
+   },
+   "team": 1,
+   "unit": "burner",
+   "video_id": "5bcb84e9fe327a1726e4c30418616b99",
+   "video_url": "/_blob/5bcb84e9fe327a1726e4c30418616b99",
+   "id": "gorge-13121-Rust_Burners2_3-58-67"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Burners_3",
+   "drift_m": 0.02,
+   "length_s": 15,
+   "machine": "builder3",
+   "order": 28,
+   "rank": 55,
+   "reasons": [
+    "no progress toward its goal (11 s)",
+    "blocked by a friendly (8 s)",
+    "driving away from its route (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=gorge SPOT_CREW=Rust_Burners_3 SPOT_FROM=151 SPOT_TO=161",
+   "score": 7.5,
+   "seconds": "151-161 s",
+   "seed": 13121,
+   "signals": [
+    "noprog_s",
+    "friend_s",
+    "wrongway_s"
+   ],
+   "signals_max": {
+    "friend_s": 8,
+    "noprog_s": 11,
+    "wrongway_s": 3
+   },
+   "surprise_max": {
+    "friend_s": 2.413,
+    "noprog_s": 3.86,
+    "wrongway_s": 2.237
+   },
+   "team": 1,
+   "unit": "burner",
+   "video_id": "c2dcc94e6ecdb841c605f98a50dd234d",
+   "video_url": "/_blob/c2dcc94e6ecdb841c605f98a50dd234d",
+   "id": "gorge-13121-Rust_Burners_3-151-161"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_3",
+   "drift_m": 0.05,
+   "length_s": 12,
+   "machine": "builder3",
+   "order": 45,
+   "rank": 66,
+   "reasons": [
+    "no progress toward its goal (12 s)",
+    "reversing on a move order (10 s)",
+    "blocked by a friendly (5 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=gorge SPOT_CREW=Rust_Hunters_3 SPOT_FROM=111 SPOT_TO=121",
+   "score": 7.37,
+   "seconds": "111-121 s",
+   "seed": 13121,
+   "signals": [
+    "noprog_s",
+    "reverse_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 5,
+    "noprog_s": 12,
+    "reverse_s": 10
+   },
+   "surprise_max": {
+    "friend_s": 1.698,
+    "noprog_s": 3.27,
+    "reverse_s": 2.608
+   },
+   "team": 1,
+   "unit": "ifv",
+   "video_id": "09f5c85fa66271e8ec5226e59182d70e",
+   "video_url": "/_blob/09f5c85fa66271e8ec5226e59182d70e",
+   "id": "gorge-13121-Rust_Hunters_3-111-121"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Guns_1",
+   "drift_m": 0.06,
+   "length_s": 5,
+   "machine": "builder3",
+   "order": 16,
+   "rank": 69,
+   "reasons": [
+    "sitting still under fire, not shooting back (5 s)",
+    "taking fire from behind (5 s)",
+    "hit from beyond its own range (5 s)",
+    "enemy in sight and in range, not firing (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=gorge SPOT_CREW=Green_Guns_1 SPOT_FROM=37 SPOT_TO=45",
+   "score": 7.29,
+   "seconds": "37-45 s",
+   "seed": 13122,
+   "signals": [
+    "idlehit_s",
+    "rearfire_s",
+    "outranged_s",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 3,
+    "idlehit_s": 5,
+    "outranged_s": 5,
+    "rearfire_s": 5
+   },
+   "surprise_max": {
+    "holdfire_s": 1.472,
+    "idlehit_s": 3.104,
+    "outranged_s": 2.441,
+    "rearfire_s": 3.024
+   },
+   "team": 0,
+   "unit": "law_tank",
+   "video_id": "69faa906bd213d6827c99ca1ca3a0426",
+   "video_url": "/_blob/69faa906bd213d6827c99ca1ca3a0426",
+   "id": "gorge-13122-Green_Guns_1-37-45"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Guns_2",
+   "drift_m": 0.04,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 22,
+   "rank": 90,
+   "reasons": [
+    "hit from beyond its own range (8 s)",
+    "sitting still under fire, not shooting back (5 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=gorge SPOT_CREW=Green_Guns_2 SPOT_FROM=101 SPOT_TO=111",
+   "score": 7.04,
+   "seconds": "101-111 s",
+   "seed": 13122,
+   "signals": [
+    "outranged_s",
+    "idlehit_s"
+   ],
+   "signals_max": {
+    "idlehit_s": 5,
+    "outranged_s": 8
+   },
+   "surprise_max": {
+    "idlehit_s": 3.104,
+    "outranged_s": 3.2
+   },
+   "team": 0,
+   "unit": "law_tank",
+   "video_id": "4225a737fcbccffb3b71c757b4741a96",
+   "video_url": "/_blob/4225a737fcbccffb3b71c757b4741a96",
+   "id": "gorge-13122-Green_Guns_2-101-111"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Guns_3",
+   "drift_m": 0.03,
+   "length_s": 9,
+   "machine": "builder3",
+   "order": 39,
+   "rank": 31,
+   "reasons": [
+    "hit from beyond its own range (9 s)",
+    "sitting still under fire, not shooting back (6 s)",
+    "driving away from its route (2 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=gorge SPOT_CREW=Green_Guns_3 SPOT_FROM=100 SPOT_TO=110",
+   "score": 8.11,
+   "seconds": "100-110 s",
+   "seed": 13122,
+   "signals": [
+    "outranged_s",
+    "idlehit_s",
+    "wrongway_s"
+   ],
+   "signals_max": {
+    "idlehit_s": 6,
+    "outranged_s": 9,
+    "wrongway_s": 2
+   },
+   "surprise_max": {
+    "idlehit_s": 3.803,
+    "outranged_s": 3.803,
+    "wrongway_s": 2.223
+   },
+   "team": 0,
+   "unit": "law_tank",
+   "video_id": "73feca44e6334545c2ea8a9e5cde1448",
+   "video_url": "/_blob/73feca44e6334545c2ea8a9e5cde1448",
+   "id": "gorge-13122-Green_Guns_3-100-110"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_1",
+   "drift_m": 0.02,
+   "length_s": 18,
+   "machine": "builder3",
+   "order": 59,
+   "rank": 38,
+   "reasons": [
+    "reversing on a move order (17 s)",
+    "no progress toward its goal (5 s)",
+    "hit from beyond its own range (4 s)",
+    "far from its squad (61.3 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=gorge SPOT_CREW=Green_Hunters_1 SPOT_FROM=69 SPOT_TO=79",
+   "score": 7.87,
+   "seconds": "69-79 s",
+   "seed": 13122,
+   "signals": [
+    "reverse_s",
+    "noprog_s",
+    "outranged_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "noprog_s": 5,
+    "outranged_s": 4,
+    "reverse_s": 17,
+    "spread_m": 61.3
+   },
+   "surprise_max": {
+    "noprog_s": 2.364,
+    "outranged_s": 2.12,
+    "reverse_s": 3.933,
+    "spread_m": 1.85
+   },
+   "team": 0,
+   "unit": "law_ifv",
+   "video_id": "300d4c3a61cabeb4a383ef74c780516e",
+   "video_url": "/_blob/300d4c3a61cabeb4a383ef74c780516e",
+   "id": "gorge-13122-Green_Hunters_1-69-79"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_5",
+   "drift_m": 0.05,
+   "length_s": 12,
+   "machine": "builder3",
+   "order": 23,
+   "rank": 63,
+   "reasons": [
+    "reversing on a move order (12 s)",
+    "far from its squad (48.4 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=gorge SPOT_CREW=Rust_Hunters_5 SPOT_FROM=12 SPOT_TO=22",
+   "score": 7.39,
+   "seconds": "12-22 s",
+   "seed": 13122,
+   "signals": [
+    "reverse_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "reverse_s": 12,
+    "spread_m": 48.4
+   },
+   "surprise_max": {
+    "reverse_s": 3.662,
+    "spread_m": 1.933
+   },
+   "team": 1,
+   "unit": "gang_ifv",
+   "video_id": "212b560d9dc50bddd0f5617b46a8ad9c",
+   "video_url": "/_blob/212b560d9dc50bddd0f5617b46a8ad9c",
+   "id": "gorge-13122-Rust_Hunters_5-12-22"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Spears_5",
+   "drift_m": 0.01,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 79,
+   "rank": 36,
+   "reasons": [
+    "sitting still under fire, not shooting back (4 s)",
+    "hit from beyond its own range (6 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=gorge SPOT_CREW=Rust_Spears_5 SPOT_FROM=78 SPOT_TO=87",
+   "score": 7.92,
+   "seconds": "78-87 s",
+   "seed": 13122,
+   "signals": [
+    "idlehit_s",
+    "outranged_s"
+   ],
+   "signals_max": {
+    "idlehit_s": 4,
+    "outranged_s": 6,
+    "spread_m": 29
+   },
+   "surprise_max": {
+    "idlehit_s": 3.962,
+    "outranged_s": 3.485,
+    "spread_m": 0.768
+   },
+   "team": 1,
+   "unit": "gang_scout",
+   "video_id": "93cd1b68cda4d8e323a4f9958f16adba",
+   "video_url": "/_blob/93cd1b68cda4d8e323a4f9958f16adba",
+   "id": "gorge-13122-Rust_Spears_5-78-87"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Rust_Wrenches_5",
+   "drift_m": 0.04,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 27,
+   "rank": 108,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=gorge SPOT_CREW=Rust_Wrenches_5 SPOT_FROM=8 SPOT_TO=16",
+   "score": 2.3,
+   "seconds": "8-16 s",
+   "seed": 13122,
+   "signals": [],
+   "signals_max": {
+    "spread_m": 25.5
+   },
+   "surprise_max": {
+    "spread_m": 0.802
+   },
+   "team": 1,
+   "unit": "gang_support",
+   "video_id": "64a938d6903a2861a54898d2e19e721b",
+   "video_url": "/_blob/64a938d6903a2861a54898d2e19e721b",
+   "id": "gorge-13122-Rust_Wrenches_5-8-16"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "FLANK",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes II_4",
+   "drift_m": 0.04,
+   "length_s": 34,
+   "machine": "builder3",
+   "order": 78,
+   "rank": 70,
+   "reasons": [
+    "enemy in sight and in range, not firing (34 s)",
+    "driving away from its route (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=gorge SPOT_CREW=Green_Eyes II_4 SPOT_FROM=54 SPOT_TO=64",
+   "score": 7.26,
+   "seconds": "54-64 s",
+   "seed": 13124,
+   "signals": [
+    "holdfire_s",
+    "wrongway_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 34,
+    "wrongway_s": 4
+   },
+   "surprise_max": {
+    "holdfire_s": 3.124,
+    "wrongway_s": 2.533
+   },
+   "team": 0,
+   "unit": "scout",
+   "video_id": "9bdd9ad397bf2fa99a0134401f9d1f68",
+   "video_url": "/_blob/9bdd9ad397bf2fa99a0134401f9d1f68",
+   "id": "gorge-13124-Green_Eyes_II_4-54-64"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "ENGAGE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_2",
+   "drift_m": 0.02,
+   "length_s": 18,
+   "machine": "builder3",
+   "order": 63,
+   "rank": 52,
+   "reasons": [
+    "sitting still under fire, not shooting back (3 s)",
+    "enemy in sight and in range, not firing (18 s)",
+    "blocked by a friendly (3 s)",
+    "far from its squad (31.6 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=gorge SPOT_CREW=Green_Hunters_2 SPOT_FROM=45 SPOT_TO=55",
+   "score": 7.55,
+   "seconds": "45-55 s",
+   "seed": 13124,
+   "signals": [
+    "idlehit_s",
+    "holdfire_s",
+    "friend_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "friend_s": 3,
+    "holdfire_s": 18,
+    "idlehit_s": 3,
+    "spread_m": 31.6
+   },
+   "surprise_max": {
+    "friend_s": 1.27,
+    "holdfire_s": 2.793,
+    "idlehit_s": 2.969,
+    "spread_m": 1.036
+   },
+   "team": 0,
+   "unit": "ifv",
+   "video_id": "9b0a55e15d2a34aad6ec22800bc59045",
+   "video_url": "/_blob/9b0a55e15d2a34aad6ec22800bc59045",
+   "id": "gorge-13124-Green_Hunters_2-45-55"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns2_3",
+   "drift_m": 0.05,
+   "length_s": 41,
+   "machine": "builder3",
+   "order": 11,
+   "rank": 51,
+   "reasons": [
+    "taking fire from behind (8 s)",
+    "hit from beyond its own range (6 s)",
+    "enemy in sight and in range, not firing (41 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=gorge SPOT_CREW=Rust_Guns2_3 SPOT_FROM=76 SPOT_TO=86",
+   "score": 7.57,
+   "seconds": "76-86 s",
+   "seed": 13124,
+   "signals": [
+    "rearfire_s",
+    "outranged_s",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 41,
+    "outranged_s": 6,
+    "rearfire_s": 8
+   },
+   "surprise_max": {
+    "holdfire_s": 2.193,
+    "outranged_s": 2.349,
+    "rearfire_s": 2.795
+   },
+   "team": 1,
+   "unit": "gang_tank",
+   "video_id": "3d47b2e86f4544f31e84843087377715",
+   "video_url": "/_blob/3d47b2e86f4544f31e84843087377715",
+   "id": "gorge-13124-Rust_Guns2_3-76-86"
+  },
+  {
+   "arena": "gorge",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_2",
+   "drift_m": 0.03,
+   "length_s": 10,
+   "machine": "builder3",
+   "order": 42,
+   "rank": 57,
+   "reasons": [
+    "driving away from its route (9 s)",
+    "far from its squad (59.2 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=gorge SPOT_CREW=Rust_Guns_2 SPOT_FROM=17 SPOT_TO=27",
+   "score": 7.47,
+   "seconds": "17-27 s",
+   "seed": 13124,
+   "signals": [
+    "wrongway_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "holdfire_s": 6,
+    "spread_m": 59.2,
+    "wrongway_s": 9
+   },
+   "surprise_max": {
+    "holdfire_s": 0.989,
+    "spread_m": 2.45,
+    "wrongway_s": 3.773
+   },
+   "team": 1,
+   "unit": "gang_tank",
+   "video_id": "29ea3f40ff4299f7acb8e7ab4d2d1ebf",
+   "video_url": "/_blob/29ea3f40ff4299f7acb8e7ab4d2d1ebf",
+   "id": "gorge-13124-Rust_Guns_2-17-27"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Spears_2",
+   "drift_m": 0.05,
+   "length_s": 4,
+   "machine": "builder3",
+   "order": 67,
+   "rank": 93,
+   "reasons": [
+    "taking fire from behind (4 s)",
+    "hit from beyond its own range (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Green_Spears_2 SPOT_FROM=57 SPOT_TO=64",
+   "score": 7.02,
+   "seconds": "57-64 s",
+   "seed": 13121,
+   "signals": [
+    "rearfire_s",
+    "outranged_s"
+   ],
+   "signals_max": {
+    "outranged_s": 4,
+    "rearfire_s": 4
+   },
+   "surprise_max": {
+    "outranged_s": 2.661,
+    "rearfire_s": 3.36
+   },
+   "team": 0,
+   "unit": "gang_scout",
+   "video_id": "abad1403396f94131270afe9e4f34375",
+   "video_url": "/_blob/abad1403396f94131270afe9e4f34375",
+   "id": "locks-13121-Green_Spears_2-57-64"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Wrenches_3",
+   "drift_m": 0.04,
+   "length_s": 10,
+   "machine": "builder3",
+   "order": 8,
+   "rank": 61,
+   "reasons": [
+    "reversing on a move order (10 s)",
+    "blocked by a friendly (9 s)",
+    "no progress toward its goal (6 s)",
+    "far from its squad (30.9 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Green_Wrenches_3 SPOT_FROM=33 SPOT_TO=43",
+   "score": 7.41,
+   "seconds": "33-43 s",
+   "seed": 13121,
+   "signals": [
+    "reverse_s",
+    "friend_s",
+    "noprog_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "friend_s": 9,
+    "noprog_s": 6,
+    "reverse_s": 10,
+    "spread_m": 30.9
+   },
+   "surprise_max": {
+    "friend_s": 2.355,
+    "noprog_s": 2.183,
+    "reverse_s": 3.396,
+    "spread_m": 1.02
+   },
+   "team": 0,
+   "unit": "gang_support",
+   "video_id": "84bf116ca677fe06a2df26ce688093b4",
+   "video_url": "/_blob/84bf116ca677fe06a2df26ce688093b4",
+   "id": "locks-13121-Green_Wrenches_3-33-43"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Rust_Burners2_1",
+   "drift_m": 0.01,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 40,
+   "rank": 103,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Rust_Burners2_1 SPOT_FROM=9 SPOT_TO=17",
+   "score": 1.5,
+   "seconds": "9-17 s",
+   "seed": 13121,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 1,
+   "unit": "burner",
+   "video_id": "98283b153a4a244f196abc50dd441979",
+   "video_url": "/_blob/98283b153a4a244f196abc50dd441979",
+   "id": "locks-13121-Rust_Burners2_1-9-17"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Burners_1",
+   "drift_m": 0.02,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 58,
+   "rank": 73,
+   "reasons": [
+    "taking fire from behind (4 s)",
+    "hit from beyond its own range (6 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Rust_Burners_1 SPOT_FROM=19 SPOT_TO=28",
+   "score": 7.24,
+   "seconds": "19-28 s",
+   "seed": 13121,
+   "signals": [
+    "rearfire_s",
+    "outranged_s"
+   ],
+   "signals_max": {
+    "outranged_s": 6,
+    "rearfire_s": 4
+   },
+   "surprise_max": {
+    "outranged_s": 2.86,
+    "rearfire_s": 3.082
+   },
+   "team": 1,
+   "unit": "burner",
+   "video_id": "8f5d5ba0f31a2d0383ad650883c3a7f8",
+   "video_url": "/_blob/8f5d5ba0f31a2d0383ad650883c3a7f8",
+   "id": "locks-13121-Rust_Burners_1-19-28"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Rust_Burners_2",
+   "drift_m": 0.04,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 35,
+   "rank": 107,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Rust_Burners_2 SPOT_FROM=232 SPOT_TO=240",
+   "score": 1.5,
+   "seconds": "232-240 s",
+   "seed": 13121,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 1,
+   "unit": "burner",
+   "video_id": "3664836dafd1bf0f30fcd173a576fe7f",
+   "video_url": "/_blob/3664836dafd1bf0f30fcd173a576fe7f",
+   "id": "locks-13121-Rust_Burners_2-232-240"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_2",
+   "drift_m": 0.02,
+   "length_s": 14,
+   "machine": "builder3",
+   "order": 15,
+   "rank": 35,
+   "reasons": [
+    "no progress toward its goal (12 s)",
+    "blocked by a friendly (14 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Rust_Hunters_2 SPOT_FROM=54 SPOT_TO=64",
+   "score": 7.94,
+   "seconds": "54-64 s",
+   "seed": 13121,
+   "signals": [
+    "noprog_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 14,
+    "noprog_s": 12
+   },
+   "surprise_max": {
+    "friend_s": 2.765,
+    "noprog_s": 3.27
+   },
+   "team": 1,
+   "unit": "ifv",
+   "video_id": "0e164ba04730fd33ade5d490e51ab040",
+   "video_url": "/_blob/0e164ba04730fd33ade5d490e51ab040",
+   "id": "locks-13121-Rust_Hunters_2-54-64"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_3",
+   "drift_m": 0.06,
+   "length_s": 15,
+   "machine": "builder3",
+   "order": 61,
+   "rank": 64,
+   "reasons": [
+    "no progress toward its goal (13 s)",
+    "blocked by a friendly (12 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Rust_Hunters_3 SPOT_FROM=54 SPOT_TO=64",
+   "score": 7.39,
+   "seconds": "54-64 s",
+   "seed": 13121,
+   "signals": [
+    "noprog_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 12,
+    "noprog_s": 13
+   },
+   "surprise_max": {
+    "friend_s": 2.647,
+    "noprog_s": 3.969
+   },
+   "team": 1,
+   "unit": "ifv",
+   "video_id": "7606706e13e4253c1c6cbdc2ce519bb3",
+   "video_url": "/_blob/7606706e13e4253c1c6cbdc2ce519bb3",
+   "id": "locks-13121-Rust_Hunters_3-54-64"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Lances_1",
+   "drift_m": 0.06,
+   "length_s": 12,
+   "machine": "builder3",
+   "order": 71,
+   "rank": 58,
+   "reasons": [
+    "turning on the spot (27.4 deg/s)",
+    "far from its squad (36.7 m)",
+    "driving away from its route (2 s)",
+    "enemy in sight and in range, not firing (2 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Rust_Lances_1 SPOT_FROM=76 SPOT_TO=86",
+   "score": 7.44,
+   "seconds": "76-86 s",
+   "seed": 13121,
+   "signals": [
+    "spin_dps",
+    "spread_m",
+    "wrongway_s",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 2,
+    "spin_dps": 27.4,
+    "spread_m": 36.7,
+    "wrongway_s": 2
+   },
+   "surprise_max": {
+    "holdfire_s": 1.275,
+    "spin_dps": 3.427,
+    "spread_m": 3.126,
+    "wrongway_s": 2.047
+   },
+   "team": 1,
+   "unit": "lancer",
+   "video_id": "947bb7ca9f6e4d7b0d2850335fcb6a64",
+   "video_url": "/_blob/947bb7ca9f6e4d7b0d2850335fcb6a64",
+   "id": "locks-13121-Rust_Lances_1-76-86"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Lances_2",
+   "drift_m": 0.03,
+   "length_s": 13,
+   "machine": "builder3",
+   "order": 68,
+   "rank": 91,
+   "reasons": [
+    "no progress toward its goal (10 s)",
+    "blocked by a friendly (12 s)",
+    "reversing on a move order (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=locks SPOT_CREW=Rust_Lances_2 SPOT_FROM=152 SPOT_TO=162",
+   "score": 7.04,
+   "seconds": "152-162 s",
+   "seed": 13121,
+   "signals": [
+    "noprog_s",
+    "friend_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "friend_s": 12,
+    "noprog_s": 10,
+    "reverse_s": 4
+   },
+   "surprise_max": {
+    "friend_s": 2.065,
+    "noprog_s": 3.427,
+    "reverse_s": 1.908
+   },
+   "team": 1,
+   "unit": "lancer",
+   "video_id": "8fe88dc6f5e5c423bdaedc51255ea701",
+   "video_url": "/_blob/8fe88dc6f5e5c423bdaedc51255ea701",
+   "id": "locks-13121-Rust_Lances_2-152-162"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Sirens_3",
+   "drift_m": 0.04,
+   "length_s": 9,
+   "machine": "builder3",
+   "order": 41,
+   "rank": 39,
+   "reasons": [
+    "hit from beyond its own range (9 s)",
+    "sitting still under fire, not shooting back (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=locks SPOT_CREW=Green_Sirens_3 SPOT_FROM=16 SPOT_TO=26",
+   "score": 7.81,
+   "seconds": "16-26 s",
+   "seed": 13122,
+   "signals": [
+    "outranged_s",
+    "idlehit_s"
+   ],
+   "signals_max": {
+    "idlehit_s": 4,
+    "outranged_s": 9
+   },
+   "surprise_max": {
+    "idlehit_s": 3.113,
+    "outranged_s": 3.113
+   },
+   "team": 0,
+   "unit": "law_suppressor",
+   "video_id": "ef4eeaa8587412f63fe120ce74417ad2",
+   "video_url": "/_blob/ef4eeaa8587412f63fe120ce74417ad2",
+   "id": "locks-13122-Green_Sirens_3-16-26"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Battery_2",
+   "drift_m": 0.03,
+   "length_s": 9,
+   "machine": "builder3",
+   "order": 4,
+   "rank": 40,
+   "reasons": [
+    "no progress toward its goal (9 s)",
+    "reversing on a move order (8 s)",
+    "blocked by a friendly (6 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=locks SPOT_CREW=Rust_Battery_2 SPOT_FROM=190 SPOT_TO=200",
+   "score": 7.8,
+   "seconds": "190-200 s",
+   "seed": 13122,
+   "signals": [
+    "noprog_s",
+    "reverse_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 6,
+    "noprog_s": 9,
+    "reverse_s": 8
+   },
+   "surprise_max": {
+    "friend_s": 1.687,
+    "noprog_s": 3.432,
+    "reverse_s": 3.21
+   },
+   "team": 1,
+   "unit": "gang_artillery",
+   "video_id": "c29d1baa311a12f8a52d0560ddaff7ee",
+   "video_url": "/_blob/c29d1baa311a12f8a52d0560ddaff7ee",
+   "id": "locks-13122-Rust_Battery_2-190-200"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Spears_1",
+   "drift_m": 0.07,
+   "length_s": 7,
+   "machine": "builder3",
+   "order": 80,
+   "rank": 77,
+   "reasons": [
+    "hit from beyond its own range (6 s)",
+    "taking fire from behind (2 s)",
+    "reversing on a move order (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=locks SPOT_CREW=Rust_Spears_1 SPOT_FROM=13 SPOT_TO=23",
+   "score": 7.19,
+   "seconds": "13-23 s",
+   "seed": 13122,
+   "signals": [
+    "outranged_s",
+    "rearfire_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "outranged_s": 6,
+    "rearfire_s": 2,
+    "reverse_s": 4
+   },
+   "surprise_max": {
+    "outranged_s": 3.485,
+    "rearfire_s": 2.299,
+    "reverse_s": 2.238
+   },
+   "team": 1,
+   "unit": "gang_scout",
+   "video_id": "5461c1d1e42b4b483b87fc7f92475ca5",
+   "video_url": "/_blob/5461c1d1e42b4b483b87fc7f92475ca5",
+   "id": "locks-13122-Rust_Spears_1-13-23"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Spears_3",
+   "drift_m": 0.02,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 74,
+   "rank": 87,
+   "reasons": [
+    "hit from beyond its own range (6 s)",
+    "taking fire from behind (2 s)",
+    "driving away from its route (2 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=locks SPOT_CREW=Rust_Spears_3 SPOT_FROM=27 SPOT_TO=36",
+   "score": 7.08,
+   "seconds": "27-36 s",
+   "seed": 13122,
+   "signals": [
+    "outranged_s",
+    "rearfire_s",
+    "wrongway_s"
+   ],
+   "signals_max": {
+    "outranged_s": 6,
+    "rearfire_s": 2,
+    "spread_m": 28.9,
+    "wrongway_s": 2
+   },
+   "surprise_max": {
+    "outranged_s": 3.485,
+    "rearfire_s": 2.299,
+    "spread_m": 0.763,
+    "wrongway_s": 1.789
+   },
+   "team": 1,
+   "unit": "gang_scout",
+   "video_id": "ad04ebab80453177590928da4ead8dea",
+   "video_url": "/_blob/ad04ebab80453177590928da4ead8dea",
+   "id": "locks-13122-Rust_Spears_3-27-36"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Spears_4",
+   "drift_m": 0.04,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 6,
+   "rank": 53,
+   "reasons": [
+    "no progress toward its goal (5 s)",
+    "taking fire from behind (4 s)",
+    "hit from beyond its own range (4 s)",
+    "reversing on a move order (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=locks SPOT_CREW=Rust_Spears_4 SPOT_FROM=41 SPOT_TO=51",
+   "score": 7.52,
+   "seconds": "41-51 s",
+   "seed": 13122,
+   "signals": [
+    "noprog_s",
+    "rearfire_s",
+    "outranged_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "friend_s": 3,
+    "noprog_s": 5,
+    "outranged_s": 4,
+    "rearfire_s": 4,
+    "reverse_s": 3,
+    "spread_m": 26.1
+   },
+   "surprise_max": {
+    "friend_s": 1.855,
+    "noprog_s": 3.962,
+    "outranged_s": 2.661,
+    "rearfire_s": 3.36,
+    "reverse_s": 1.865,
+    "spread_m": 0.613
+   },
+   "team": 1,
+   "unit": "gang_scout",
+   "video_id": "a5acdf036433cfcdde0aab5c49027282",
+   "video_url": "/_blob/a5acdf036433cfcdde0aab5c49027282",
+   "id": "locks-13122-Rust_Spears_4-41-51"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_5",
+   "drift_m": 0.03,
+   "length_s": 11,
+   "machine": "builder3",
+   "order": 76,
+   "rank": 82,
+   "reasons": [
+    "no progress toward its goal (12 s)",
+    "reversing on a move order (3 s)",
+    "far from its squad (50.2 m)",
+    "turning on the spot (36 deg/s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=locks SPOT_CREW=Rust_Hunters_5 SPOT_FROM=22 SPOT_TO=32",
+   "score": 7.11,
+   "seconds": "22-32 s",
+   "seed": 13123,
+   "signals": [
+    "noprog_s",
+    "reverse_s",
+    "spread_m",
+    "spin_dps"
+   ],
+   "signals_max": {
+    "friend_s": 5,
+    "noprog_s": 12,
+    "reverse_s": 3,
+    "spin_dps": 36,
+    "spread_m": 50.2
+   },
+   "surprise_max": {
+    "friend_s": 1.212,
+    "noprog_s": 3.933,
+    "reverse_s": 2.019,
+    "spin_dps": 1.283,
+    "spread_m": 1.484
+   },
+   "team": 1,
+   "unit": "law_ifv",
+   "video_id": "1f7e1127c7d72026385ddc64c5154196",
+   "video_url": "/_blob/1f7e1127c7d72026385ddc64c5154196",
+   "id": "locks-13123-Rust_Hunters_5-22-32"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Sirens_2",
+   "drift_m": 0.02,
+   "length_s": 11,
+   "machine": "builder3",
+   "order": 3,
+   "rank": 92,
+   "reasons": [
+    "driving away from its route (10 s)",
+    "blocked by a friendly (11 s)",
+    "no progress toward its goal (8 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=locks SPOT_CREW=Rust_Sirens_2 SPOT_FROM=32 SPOT_TO=42",
+   "score": 7.04,
+   "seconds": "32-42 s",
+   "seed": 13123,
+   "signals": [
+    "wrongway_s",
+    "friend_s",
+    "noprog_s"
+   ],
+   "signals_max": {
+    "friend_s": 11,
+    "noprog_s": 8,
+    "wrongway_s": 10
+   },
+   "surprise_max": {
+    "friend_s": 1.733,
+    "noprog_s": 1.715,
+    "wrongway_s": 3.59
+   },
+   "team": 1,
+   "unit": "law_suppressor",
+   "video_id": "e01d28b71e5c3f7910c96624775c401f",
+   "video_url": "/_blob/e01d28b71e5c3f7910c96624775c401f",
+   "id": "locks-13123-Rust_Sirens_2-32-42"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Green_Hunters_4",
+   "drift_m": 0.03,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 9,
+   "rank": 104,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=locks SPOT_CREW=Green_Hunters_4 SPOT_FROM=42 SPOT_TO=50",
+   "score": 1.5,
+   "seconds": "42-50 s",
+   "seed": 13124,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 0,
+   "unit": "ifv",
+   "video_id": "baf668d50bab7ed56f211f24d7af47f9",
+   "video_url": "/_blob/baf668d50bab7ed56f211f24d7af47f9",
+   "id": "locks-13124-Green_Hunters_4-42-50"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_3",
+   "drift_m": 0.02,
+   "length_s": 66,
+   "machine": "builder3",
+   "order": 69,
+   "rank": 80,
+   "reasons": [
+    "enemy in sight and in range, not firing (66 s)",
+    "reversing on a move order (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=locks SPOT_CREW=Rust_Guns_3 SPOT_FROM=209 SPOT_TO=219",
+   "score": 7.14,
+   "seconds": "209-219 s",
+   "seed": 13124,
+   "signals": [
+    "holdfire_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 66,
+    "reverse_s": 4
+   },
+   "surprise_max": {
+    "holdfire_s": 4.074,
+    "reverse_s": 1.253
+   },
+   "team": 1,
+   "unit": "gang_tank",
+   "video_id": "1a40268878b986f721519c8e0185d949",
+   "video_url": "/_blob/1a40268878b986f721519c8e0185d949",
+   "id": "locks-13124-Rust_Guns_3-209-219"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "RETREAT",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters2_1",
+   "drift_m": 0.05,
+   "length_s": 9,
+   "machine": "builder3",
+   "order": 1,
+   "rank": 33,
+   "reasons": [
+    "hit from beyond its own range (9 s)",
+    "taking fire from behind (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=locks SPOT_CREW=Rust_Hunters2_1 SPOT_FROM=57 SPOT_TO=67",
+   "score": 8.02,
+   "seconds": "57-67 s",
+   "seed": 13124,
+   "signals": [
+    "outranged_s",
+    "rearfire_s"
+   ],
+   "signals_max": {
+    "outranged_s": 9,
+    "rearfire_s": 4
+   },
+   "surprise_max": {
+    "outranged_s": 3.963,
+    "rearfire_s": 2.471
+   },
+   "team": 1,
+   "unit": "gang_ifv",
+   "video_id": "cc6b6600150f0b8799f406f499a3b1a6",
+   "video_url": "/_blob/cc6b6600150f0b8799f406f499a3b1a6",
+   "id": "locks-13124-Rust_Hunters2_1-57-67"
+  },
+  {
+   "arena": "locks",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_4",
+   "drift_m": 0.05,
+   "length_s": 10,
+   "machine": "builder3",
+   "order": 50,
+   "rank": 76,
+   "reasons": [
+    "taking fire from behind (8 s)",
+    "no progress toward its goal (5 s)",
+    "enemy in sight and in range, not firing (5 s)",
+    "blocked by a friendly (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=locks SPOT_CREW=Rust_Hunters_4 SPOT_FROM=24 SPOT_TO=34",
+   "score": 7.21,
+   "seconds": "24-34 s",
+   "seed": 13124,
+   "signals": [
+    "rearfire_s",
+    "noprog_s",
+    "holdfire_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 3,
+    "holdfire_s": 5,
+    "noprog_s": 5,
+    "rearfire_s": 8,
+    "spread_m": 34.2
+   },
+   "surprise_max": {
+    "friend_s": 1.399,
+    "holdfire_s": 1.548,
+    "noprog_s": 2.361,
+    "rearfire_s": 3.185,
+    "spread_m": 1.19
+   },
+   "team": 1,
+   "unit": "gang_ifv",
+   "video_id": "9886a47eaf3e47597cc362be1bc9cc17",
+   "video_url": "/_blob/9886a47eaf3e47597cc362be1bc9cc17",
+   "id": "locks-13124-Rust_Hunters_4-24-34"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Green_Wrenches_1",
+   "drift_m": 0.05,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 30,
+   "rank": 101,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=parade SPOT_CREW=Green_Wrenches_1 SPOT_FROM=59 SPOT_TO=67",
+   "score": 1.5,
+   "seconds": "59-67 s",
+   "seed": 13121,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 0,
+   "unit": "gang_support",
+   "video_id": "fa6c1c1a36e8c34784ca4a550fdf6db2",
+   "video_url": "/_blob/fa6c1c1a36e8c34784ca4a550fdf6db2",
+   "id": "parade-13121-Green_Wrenches_1-59-67"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_2",
+   "drift_m": 0.03,
+   "length_s": 19,
+   "machine": "builder3",
+   "order": 14,
+   "rank": 56,
+   "reasons": [
+    "enemy in sight and in range, not firing (19 s)",
+    "turning on the spot (79.9 deg/s)",
+    "no progress toward its goal (3 s)",
+    "blocked by a friendly (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=parade SPOT_CREW=Rust_Guns_2 SPOT_FROM=21 SPOT_TO=31",
+   "score": 7.5,
+   "seconds": "21-31 s",
+   "seed": 13121,
+   "signals": [
+    "holdfire_s",
+    "spin_dps",
+    "noprog_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 3,
+    "holdfire_s": 19,
+    "noprog_s": 3,
+    "spin_dps": 79.9
+   },
+   "surprise_max": {
+    "friend_s": 1.02,
+    "holdfire_s": 3.579,
+    "noprog_s": 1.266,
+    "spin_dps": 2.278
+   },
+   "team": 1,
+   "unit": "tank",
+   "video_id": "b9b1af5435d006fb26855de0b7c47bdf",
+   "video_url": "/_blob/b9b1af5435d006fb26855de0b7c47bdf",
+   "id": "parade-13121-Rust_Guns_2-21-31"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_3",
+   "drift_m": 0.03,
+   "length_s": 10,
+   "machine": "builder3",
+   "order": 7,
+   "rank": 99,
+   "reasons": [
+    "taking fire from behind (3 s)",
+    "enemy in sight and in range, not firing (10 s)",
+    "turning on the spot (67.3 deg/s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=parade SPOT_CREW=Rust_Guns_3 SPOT_FROM=49 SPOT_TO=59",
+   "score": 6.94,
+   "seconds": "49-59 s",
+   "seed": 13121,
+   "signals": [
+    "rearfire_s",
+    "holdfire_s",
+    "spin_dps"
+   ],
+   "signals_max": {
+    "holdfire_s": 10,
+    "rearfire_s": 3,
+    "spin_dps": 67.3
+   },
+   "surprise_max": {
+    "holdfire_s": 2,
+    "rearfire_s": 3.278,
+    "spin_dps": 1.655
+   },
+   "team": 1,
+   "unit": "tank",
+   "video_id": "229e118fdcf2f2514310ef0d18a86528",
+   "video_url": "/_blob/229e118fdcf2f2514310ef0d18a86528",
+   "id": "parade-13121-Rust_Guns_3-49-59"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Rust_Lances_1",
+   "drift_m": 0.04,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 12,
+   "rank": 102,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=parade SPOT_CREW=Rust_Lances_1 SPOT_FROM=7 SPOT_TO=15",
+   "score": 1.5,
+   "seconds": "7-15 s",
+   "seed": 13121,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 1,
+   "unit": "lancer",
+   "video_id": "5e03cf4eae3262294b99d50beab8c3d5",
+   "video_url": "/_blob/5e03cf4eae3262294b99d50beab8c3d5",
+   "id": "parade-13121-Rust_Lances_1-7-15"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": true,
+   "crew": "Rust_Lances_2",
+   "drift_m": 0.04,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 34,
+   "rank": 106,
+   "reasons": [],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=parade SPOT_CREW=Rust_Lances_2 SPOT_FROM=188 SPOT_TO=196",
+   "score": 1.5,
+   "seconds": "188-196 s",
+   "seed": 13121,
+   "signals": [],
+   "signals_max": {},
+   "surprise_max": {},
+   "team": 1,
+   "unit": "lancer",
+   "video_id": "77be9362b1473b5c28d4c34d56a87091",
+   "video_url": "/_blob/77be9362b1473b5c28d4c34d56a87091",
+   "id": "parade-13121-Rust_Lances_2-188-196"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Sirens_3",
+   "drift_m": 0.05,
+   "length_s": 10,
+   "machine": "builder3",
+   "order": 10,
+   "rank": 71,
+   "reasons": [
+    "hit from beyond its own range (10 s)",
+    "taking fire from behind (2 s)",
+    "far from its squad (26.4 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=parade SPOT_CREW=Rust_Sirens_3 SPOT_FROM=32 SPOT_TO=42",
+   "score": 7.26,
+   "seconds": "32-42 s",
+   "seed": 13123,
+   "signals": [
+    "outranged_s",
+    "rearfire_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "outranged_s": 10,
+    "rearfire_s": 2,
+    "spread_m": 26.4
+   },
+   "surprise_max": {
+    "outranged_s": 3.59,
+    "rearfire_s": 2.01,
+    "spread_m": 1.072
+   },
+   "team": 1,
+   "unit": "law_suppressor",
+   "video_id": "49b2b9b49d686a5cada9476f340f2285",
+   "video_url": "/_blob/49b2b9b49d686a5cada9476f340f2285",
+   "id": "parade-13123-Rust_Sirens_3-32-42"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "SUPPRESS",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes II_2",
+   "drift_m": 0.06,
+   "length_s": 13,
+   "machine": "builder3",
+   "order": 56,
+   "rank": 81,
+   "reasons": [
+    "driving away from its route (6 s)",
+    "enemy in sight and in range, not firing (13 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=parade SPOT_CREW=Green_Eyes II_2 SPOT_FROM=17 SPOT_TO=27",
+   "score": 7.13,
+   "seconds": "17-27 s",
+   "seed": 13124,
+   "signals": [
+    "wrongway_s",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 13,
+    "wrongway_s": 6
+   },
+   "surprise_max": {
+    "holdfire_s": 1.859,
+    "wrongway_s": 3.425
+   },
+   "team": 0,
+   "unit": "scout",
+   "video_id": "13c7e72a8bf37dd44f1202a2554275ee",
+   "video_url": "/_blob/13c7e72a8bf37dd44f1202a2554275ee",
+   "id": "parade-13124-Green_Eyes_II_2-17-27"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "CLEAR_LANE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes II_6",
+   "drift_m": 0.05,
+   "length_s": 23,
+   "machine": "builder3",
+   "order": 52,
+   "rank": 60,
+   "reasons": [
+    "driving away from its route (5 s)",
+    "enemy in sight and in range, not firing (23 s)",
+    "far from its squad (50.6 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=parade SPOT_CREW=Green_Eyes II_6 SPOT_FROM=27 SPOT_TO=37",
+   "score": 7.42,
+   "seconds": "27-37 s",
+   "seed": 13124,
+   "signals": [
+    "wrongway_s",
+    "holdfire_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "holdfire_s": 23,
+    "spread_m": 50.6,
+    "wrongway_s": 5
+   },
+   "surprise_max": {
+    "holdfire_s": 2.452,
+    "spread_m": 1.677,
+    "wrongway_s": 2.948
+   },
+   "team": 0,
+   "unit": "scout",
+   "video_id": "8bc590eae5f3e2385cb2278614b5882a",
+   "video_url": "/_blob/8bc590eae5f3e2385cb2278614b5882a",
+   "id": "parade-13124-Green_Eyes_II_6-27-37"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters2_4",
+   "drift_m": 0.05,
+   "length_s": 12,
+   "machine": "builder3",
+   "order": 60,
+   "rank": 45,
+   "reasons": [
+    "taking fire from behind (12 s)",
+    "sitting still under fire, not shooting back (2 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=parade SPOT_CREW=Rust_Hunters2_4 SPOT_FROM=72 SPOT_TO=82",
+   "score": 7.7,
+   "seconds": "72-82 s",
+   "seed": 13124,
+   "signals": [
+    "rearfire_s",
+    "idlehit_s"
+   ],
+   "signals_max": {
+    "idlehit_s": 2,
+    "rearfire_s": 12
+   },
+   "surprise_max": {
+    "idlehit_s": 2.247,
+    "rearfire_s": 3.963
+   },
+   "team": 1,
+   "unit": "gang_ifv",
+   "video_id": "ab44b0a69bb543c9c6d96b202e6253a9",
+   "video_url": "/_blob/ab44b0a69bb543c9c6d96b202e6253a9",
+   "id": "parade-13124-Rust_Hunters2_4-72-82"
+  },
+  {
+   "arena": "parade",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Wrenches_2",
+   "drift_m": 0.04,
+   "length_s": 15,
+   "machine": "builder3",
+   "order": 75,
+   "rank": 54,
+   "reasons": [
+    "hit from beyond its own range (15 s)",
+    "taking fire from behind (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=parade SPOT_CREW=Rust_Wrenches_2 SPOT_FROM=78 SPOT_TO=88",
+   "score": 7.51,
+   "seconds": "78-88 s",
+   "seed": 13124,
+   "signals": [
+    "outranged_s",
+    "rearfire_s"
+   ],
+   "signals_max": {
+    "outranged_s": 15,
+    "rearfire_s": 4
+   },
+   "surprise_max": {
+    "outranged_s": 3.396,
+    "rearfire_s": 2.157
+   },
+   "team": 1,
+   "unit": "gang_support",
+   "video_id": "80c4fce2e3ffd5659b625779bc114365",
+   "video_url": "/_blob/80c4fce2e3ffd5659b625779bc114365",
+   "id": "parade-13124-Rust_Wrenches_2-78-88"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_9",
+   "drift_m": 0.03,
+   "length_s": 30,
+   "machine": "builder3",
+   "order": 53,
+   "rank": 41,
+   "reasons": [
+    "blocked by a friendly (30 s)",
+    "reversing on a move order (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=sumps SPOT_CREW=Green_Hunters_9 SPOT_FROM=48 SPOT_TO=58",
+   "score": 7.8,
+   "seconds": "48-58 s",
+   "seed": 13121,
+   "signals": [
+    "friend_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "friend_s": 30,
+    "reverse_s": 3
+   },
+   "surprise_max": {
+    "friend_s": 3.963,
+    "reverse_s": 1.385
+   },
+   "team": 0,
+   "unit": "gang_ifv",
+   "video_id": "649931ecdfa776cd64dd1cfa51f1fe81",
+   "video_url": "/_blob/649931ecdfa776cd64dd1cfa51f1fe81",
+   "id": "sumps-13121-Green_Hunters_9-48-58"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Burners2_1",
+   "drift_m": 0.05,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 38,
+   "rank": 78,
+   "reasons": [
+    "taking fire from behind (6 s)",
+    "hit from beyond its own range (3 s)",
+    "enemy in sight and in range, not firing (1 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=sumps SPOT_CREW=Rust_Burners2_1 SPOT_FROM=69 SPOT_TO=78",
+   "score": 7.19,
+   "seconds": "69-78 s",
+   "seed": 13121,
+   "signals": [
+    "rearfire_s",
+    "outranged_s",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 1,
+    "outranged_s": 3,
+    "rearfire_s": 6
+   },
+   "surprise_max": {
+    "holdfire_s": 1.778,
+    "outranged_s": 2.034,
+    "rearfire_s": 3.86
+   },
+   "team": 1,
+   "unit": "burner",
+   "video_id": "c7e8deb795eeaeba6ae1c53bdfa2865e",
+   "video_url": "/_blob/c7e8deb795eeaeba6ae1c53bdfa2865e",
+   "id": "sumps-13121-Rust_Burners2_1-69-78"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Burners_1",
+   "drift_m": 0.06,
+   "length_s": 8,
+   "machine": "builder3",
+   "order": 36,
+   "rank": 94,
+   "reasons": [
+    "driving away from its route (8 s)",
+    "blocked by a friendly (6 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13121 SPOT_ARENA=sumps SPOT_CREW=Rust_Burners_1 SPOT_FROM=18 SPOT_TO=28",
+   "score": 6.99,
+   "seconds": "18-28 s",
+   "seed": 13121,
+   "signals": [
+    "wrongway_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 6,
+    "wrongway_s": 8
+   },
+   "surprise_max": {
+    "friend_s": 1.931,
+    "wrongway_s": 3.559
+   },
+   "team": 1,
+   "unit": "burner",
+   "video_id": "365386a1c736ef28efdfd6c8840a1de1",
+   "video_url": "/_blob/365386a1c736ef28efdfd6c8840a1de1",
+   "id": "sumps-13121-Rust_Burners_1-18-28"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_5",
+   "drift_m": 0.03,
+   "length_s": 22,
+   "machine": "builder3",
+   "order": 73,
+   "rank": 95,
+   "reasons": [
+    "enemy in sight and in range, not firing (10 s)",
+    "turning on the spot (89.8 deg/s)",
+    "driving away from its route (2 s)",
+    "no progress toward its goal (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=sumps SPOT_CREW=Green_Hunters_5 SPOT_FROM=32 SPOT_TO=42",
+   "score": 6.99,
+   "seconds": "32-42 s",
+   "seed": 13122,
+   "signals": [
+    "holdfire_s",
+    "spin_dps",
+    "wrongway_s",
+    "noprog_s"
+   ],
+   "signals_max": {
+    "friend_s": 8,
+    "holdfire_s": 10,
+    "noprog_s": 4,
+    "spin_dps": 89.8,
+    "spread_m": 46.7,
+    "wrongway_s": 2
+   },
+   "surprise_max": {
+    "friend_s": 1.325,
+    "holdfire_s": 2.757,
+    "noprog_s": 2.184,
+    "spin_dps": 2.279,
+    "spread_m": 1.356,
+    "wrongway_s": 2.251
+   },
+   "team": 0,
+   "unit": "law_ifv",
+   "video_id": "772a0f108f474d2e1578e747fd5c2cc4",
+   "video_url": "/_blob/772a0f108f474d2e1578e747fd5c2cc4",
+   "id": "sumps-13122-Green_Hunters_5-32-42"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Wrenches_5",
+   "drift_m": 0.03,
+   "length_s": 9,
+   "machine": "builder3",
+   "order": 19,
+   "rank": 42,
+   "reasons": [
+    "sitting still under fire, not shooting back (8 s)",
+    "hit from beyond its own range (9 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=sumps SPOT_CREW=Rust_Wrenches_5 SPOT_FROM=38 SPOT_TO=48",
+   "score": 7.79,
+   "seconds": "38-48 s",
+   "seed": 13122,
+   "signals": [
+    "idlehit_s",
+    "outranged_s"
+   ],
+   "signals_max": {
+    "idlehit_s": 8,
+    "outranged_s": 9
+   },
+   "surprise_max": {
+    "idlehit_s": 3.873,
+    "outranged_s": 2.329
+   },
+   "team": 1,
+   "unit": "gang_support",
+   "video_id": "e4a4a287564092fa65dda839a260eaa3",
+   "video_url": "/_blob/e4a4a287564092fa65dda839a260eaa3",
+   "id": "sumps-13122-Rust_Wrenches_5-38-48"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Lances_4",
+   "drift_m": 0.02,
+   "length_s": 7,
+   "machine": "builder3",
+   "order": 77,
+   "rank": 84,
+   "reasons": [
+    "taking fire from behind (7 s)",
+    "sitting still under fire, not shooting back (2 s)",
+    "turning on the spot (25.6 deg/s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=sumps SPOT_CREW=Green_Lances_4 SPOT_FROM=99 SPOT_TO=109",
+   "score": 7.1,
+   "seconds": "99-109 s",
+   "seed": 13123,
+   "signals": [
+    "rearfire_s",
+    "idlehit_s",
+    "spin_dps"
+   ],
+   "signals_max": {
+    "idlehit_s": 2,
+    "rearfire_s": 7,
+    "spin_dps": 25.6
+   },
+   "surprise_max": {
+    "idlehit_s": 2.329,
+    "rearfire_s": 3.37,
+    "spin_dps": 1.098
+   },
+   "team": 0,
+   "unit": "syn_lancer",
+   "video_id": "f516c23f3c60bf76eb07ff1b18555731",
+   "video_url": "/_blob/f516c23f3c60bf76eb07ff1b18555731",
+   "id": "sumps-13123-Green_Lances_4-99-109"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns2_3",
+   "drift_m": 0.02,
+   "length_s": 21,
+   "machine": "builder3",
+   "order": 44,
+   "rank": 47,
+   "reasons": [
+    "no progress toward its goal (18 s)",
+    "blocked by a friendly (14 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=sumps SPOT_CREW=Rust_Guns2_3 SPOT_FROM=104 SPOT_TO=114",
+   "score": 7.69,
+   "seconds": "104-114 s",
+   "seed": 13124,
+   "signals": [
+    "noprog_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 14,
+    "noprog_s": 18
+   },
+   "surprise_max": {
+    "friend_s": 2.843,
+    "noprog_s": 4.074
+   },
+   "team": 1,
+   "unit": "gang_tank",
+   "video_id": "b8ce0e4b2a19f00e8d556e1f19be3610",
+   "video_url": "/_blob/b8ce0e4b2a19f00e8d556e1f19be3610",
+   "id": "sumps-13124-Rust_Guns2_3-104-114"
+  },
+  {
+   "arena": "sumps",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_2",
+   "drift_m": 0.04,
+   "length_s": 15,
+   "machine": "builder3",
+   "order": 13,
+   "rank": 75,
+   "reasons": [
+    "reversing on a move order (14 s)",
+    "blocked by a friendly (11 s)",
+    "no progress toward its goal (8 s)",
+    "far from its squad (44.6 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=sumps SPOT_CREW=Rust_Guns_2 SPOT_FROM=67 SPOT_TO=77",
+   "score": 7.23,
+   "seconds": "67-77 s",
+   "seed": 13124,
+   "signals": [
+    "reverse_s",
+    "friend_s",
+    "noprog_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "friend_s": 11,
+    "holdfire_s": 5,
+    "noprog_s": 8,
+    "reverse_s": 14,
+    "spread_m": 44.6
+   },
+   "surprise_max": {
+    "friend_s": 2.366,
+    "holdfire_s": 0.928,
+    "noprog_s": 1.934,
+    "reverse_s": 3.032,
+    "spread_m": 1.327
+   },
+   "team": 1,
+   "unit": "gang_tank",
+   "video_id": "dfed08484907ee5aea7f1d9d480b6197",
+   "video_url": "/_blob/dfed08484907ee5aea7f1d9d480b6197",
+   "id": "sumps-13124-Rust_Guns_2-67-77"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Hunters_5",
+   "drift_m": 0.01,
+   "length_s": 17,
+   "machine": "builder3",
+   "order": 32,
+   "rank": 34,
+   "reasons": [
+    "enemy in sight and in range, not firing (14 s)",
+    "driving away from its route (4 s)",
+    "no progress toward its goal (7 s)",
+    "turning on the spot (94.9 deg/s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13122 SPOT_ARENA=terminus SPOT_CREW=Green_Hunters_5 SPOT_FROM=31 SPOT_TO=41",
+   "score": 7.98,
+   "seconds": "31-41 s",
+   "seed": 13122,
+   "signals": [
+    "holdfire_s",
+    "wrongway_s",
+    "noprog_s",
+    "spin_dps"
+   ],
+   "signals_max": {
+    "friend_s": 5,
+    "holdfire_s": 14,
+    "noprog_s": 7,
+    "reverse_s": 4,
+    "spin_dps": 94.9,
+    "wrongway_s": 4
+   },
+   "surprise_max": {
+    "friend_s": 1.212,
+    "holdfire_s": 3.933,
+    "noprog_s": 2.729,
+    "reverse_s": 2.309,
+    "spin_dps": 2.677,
+    "wrongway_s": 3.03
+   },
+   "team": 0,
+   "unit": "law_ifv",
+   "video_id": "ca18e2da2471aca6d26785bdab2f692e",
+   "video_url": "/_blob/ca18e2da2471aca6d26785bdab2f692e",
+   "id": "terminus-13122-Green_Hunters_5-31-41"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Lances_4",
+   "drift_m": 0.04,
+   "length_s": 7,
+   "machine": "builder3",
+   "order": 20,
+   "rank": 68,
+   "reasons": [
+    "driving away from its route (2 s)",
+    "far from its squad (36.8 m)",
+    "turning on the spot (80.4 deg/s)",
+    "enemy in sight and in range, not firing (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=terminus SPOT_CREW=Green_Lances_4 SPOT_FROM=27 SPOT_TO=37",
+   "score": 7.3,
+   "seconds": "27-37 s",
+   "seed": 13123,
+   "signals": [
+    "wrongway_s",
+    "spread_m",
+    "spin_dps",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 4,
+    "spin_dps": 80.4,
+    "spread_m": 36.8,
+    "wrongway_s": 2
+   },
+   "surprise_max": {
+    "holdfire_s": 1.727,
+    "spin_dps": 1.737,
+    "spread_m": 2.525,
+    "wrongway_s": 3.37
+   },
+   "team": 0,
+   "unit": "syn_lancer",
+   "video_id": "72aabc2921385c6323daf8259e2d9a1f",
+   "video_url": "/_blob/72aabc2921385c6323daf8259e2d9a1f",
+   "id": "terminus-13123-Green_Lances_4-27-37"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "ENGAGE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Eyes_2",
+   "drift_m": 0.04,
+   "length_s": 7,
+   "machine": "builder3",
+   "order": 43,
+   "rank": 85,
+   "reasons": [
+    "driving away from its route (6 s)",
+    "far from its squad (49.1 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=terminus SPOT_CREW=Rust_Eyes_2 SPOT_FROM=121 SPOT_TO=131",
+   "score": 7.09,
+   "seconds": "121-131 s",
+   "seed": 13123,
+   "signals": [
+    "wrongway_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "spread_m": 49.1,
+    "wrongway_s": 6
+   },
+   "surprise_max": {
+    "spread_m": 2.323,
+    "wrongway_s": 3.364
+   },
+   "team": 1,
+   "unit": "law_scout",
+   "video_id": "6d8b6fc3750e6dda871413d248e7aa95",
+   "video_url": "/_blob/6d8b6fc3750e6dda871413d248e7aa95",
+   "id": "terminus-13123-Rust_Eyes_2-121-131"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Eyes_3",
+   "drift_m": 0.05,
+   "length_s": 7,
+   "machine": "builder3",
+   "order": 49,
+   "rank": 96,
+   "reasons": [
+    "blocked by a friendly (6 s)",
+    "no progress toward its goal (4 s)",
+    "reversing on a move order (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=terminus SPOT_CREW=Rust_Eyes_3 SPOT_FROM=27 SPOT_TO=37",
+   "score": 6.99,
+   "seconds": "27-37 s",
+   "seed": 13123,
+   "signals": [
+    "friend_s",
+    "noprog_s",
+    "reverse_s"
+   ],
+   "signals_max": {
+    "friend_s": 6,
+    "noprog_s": 4,
+    "reverse_s": 3
+   },
+   "surprise_max": {
+    "friend_s": 3.063,
+    "noprog_s": 2.762,
+    "reverse_s": 2.063
+   },
+   "team": 1,
+   "unit": "law_scout",
+   "video_id": "425ce21063594c42339d00870a65f394",
+   "video_url": "/_blob/425ce21063594c42339d00870a65f394",
+   "id": "terminus-13123-Rust_Eyes_3-27-37"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Hunters_4",
+   "drift_m": 0.06,
+   "length_s": 6,
+   "machine": "builder3",
+   "order": 51,
+   "rank": 74,
+   "reasons": [
+    "driving away from its route (6 s)",
+    "no progress toward its goal (3 s)",
+    "blocked by a friendly (5 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13123 SPOT_ARENA=terminus SPOT_CREW=Rust_Hunters_4 SPOT_FROM=17 SPOT_TO=26",
+   "score": 7.24,
+   "seconds": "17-26 s",
+   "seed": 13123,
+   "signals": [
+    "wrongway_s",
+    "noprog_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 5,
+    "noprog_s": 3,
+    "wrongway_s": 6
+   },
+   "surprise_max": {
+    "friend_s": 1.212,
+    "noprog_s": 2.019,
+    "wrongway_s": 3.933
+   },
+   "team": 1,
+   "unit": "law_ifv",
+   "video_id": "cec126eaa144c114f142a166ecf1e6c7",
+   "video_url": "/_blob/cec126eaa144c114f142a166ecf1e6c7",
+   "id": "terminus-13123-Rust_Hunters_4-17-26"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "CLEAR_LANE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes II_1",
+   "drift_m": 0.04,
+   "length_s": 24,
+   "machine": "builder3",
+   "order": 17,
+   "rank": 67,
+   "reasons": [
+    "taking fire from behind (3 s)",
+    "enemy in sight and in range, not firing (24 s)",
+    "driving away from its route (3 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=terminus SPOT_CREW=Green_Eyes II_1 SPOT_FROM=65 SPOT_TO=75",
+   "score": 7.32,
+   "seconds": "65-75 s",
+   "seed": 13124,
+   "signals": [
+    "rearfire_s",
+    "holdfire_s",
+    "wrongway_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 24,
+    "rearfire_s": 3,
+    "wrongway_s": 3
+   },
+   "surprise_max": {
+    "holdfire_s": 2.511,
+    "rearfire_s": 2.58,
+    "wrongway_s": 2.094
+   },
+   "team": 0,
+   "unit": "scout",
+   "video_id": "a3fa1cac054754b962ac4b783faf3a10",
+   "video_url": "/_blob/a3fa1cac054754b962ac4b783faf3a10",
+   "id": "terminus-13124-Green_Eyes_II_1-65-75"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "SUPPRESS",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Green_Eyes II_8",
+   "drift_m": 0.04,
+   "length_s": 11,
+   "machine": "builder3",
+   "order": 33,
+   "rank": 49,
+   "reasons": [
+    "turning on the spot (88.8 deg/s)",
+    "enemy in sight and in range, not firing (11 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=terminus SPOT_CREW=Green_Eyes II_8 SPOT_FROM=41 SPOT_TO=51",
+   "score": 7.59,
+   "seconds": "41-51 s",
+   "seed": 13124,
+   "signals": [
+    "spin_dps",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 11,
+    "spin_dps": 88.8
+   },
+   "surprise_max": {
+    "holdfire_s": 1.735,
+    "spin_dps": 4.124
+   },
+   "team": 0,
+   "unit": "scout",
+   "video_id": "8165cef3a4c5d8edf04852859e969728",
+   "video_url": "/_blob/8165cef3a4c5d8edf04852859e969728",
+   "id": "terminus-13124-Green_Eyes_II_8-41-51"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Guns_3",
+   "drift_m": 0.05,
+   "length_s": 13,
+   "machine": "builder3",
+   "order": 2,
+   "rank": 59,
+   "reasons": [
+    "taking fire from behind (12 s)",
+    "hit from beyond its own range (8 s)",
+    "enemy in sight and in range, not firing (8 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=terminus SPOT_CREW=Rust_Guns_3 SPOT_FROM=62 SPOT_TO=72",
+   "score": 7.44,
+   "seconds": "62-72 s",
+   "seed": 13124,
+   "signals": [
+    "rearfire_s",
+    "outranged_s",
+    "holdfire_s"
+   ],
+   "signals_max": {
+    "holdfire_s": 8,
+    "outranged_s": 8,
+    "rearfire_s": 12,
+    "spread_m": 36.8
+   },
+   "surprise_max": {
+    "holdfire_s": 1.105,
+    "outranged_s": 2.555,
+    "rearfire_s": 4.074,
+    "spread_m": 0.963
+   },
+   "team": 1,
+   "unit": "gang_tank",
+   "video_id": "91d6d9172ee9f98b2f278b60a43c5c6c",
+   "video_url": "/_blob/91d6d9172ee9f98b2f278b60a43c5c6c",
+   "id": "terminus-13124-Rust_Guns_3-62-72"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "HOLD",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Wrenches_1",
+   "drift_m": 0.05,
+   "length_s": 9,
+   "machine": "builder3",
+   "order": 29,
+   "rank": 48,
+   "reasons": [
+    "taking fire from behind (9 s)",
+    "enemy in sight and in range, not firing (2 s)",
+    "sitting still under fire, not shooting back (2 s)",
+    "blocked by a friendly (4 s)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=terminus SPOT_CREW=Rust_Wrenches_1 SPOT_FROM=107 SPOT_TO=117",
+   "score": 7.62,
+   "seconds": "107-117 s",
+   "seed": 13124,
+   "signals": [
+    "rearfire_s",
+    "holdfire_s",
+    "idlehit_s",
+    "friend_s"
+   ],
+   "signals_max": {
+    "friend_s": 4,
+    "holdfire_s": 2,
+    "idlehit_s": 2,
+    "outranged_s": 3,
+    "rearfire_s": 9
+   },
+   "surprise_max": {
+    "friend_s": 1.442,
+    "holdfire_s": 2.211,
+    "idlehit_s": 2.166,
+    "outranged_s": 1.332,
+    "rearfire_s": 3.873
+   },
+   "team": 1,
+   "unit": "gang_support",
+   "video_id": "d01bae03d1302f94e7d8f1d7ee85e645",
+   "video_url": "/_blob/d01bae03d1302f94e7d8f1d7ee85e645",
+   "id": "terminus-13124-Rust_Wrenches_1-107-117"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Wrenches_4",
+   "drift_m": 0.05,
+   "length_s": 14,
+   "machine": "builder3",
+   "order": 47,
+   "rank": 46,
+   "reasons": [
+    "blocked by a friendly (14 s)",
+    "no progress toward its goal (10 s)",
+    "driving away from its route (3 s)",
+    "far from its squad (34.6 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=terminus SPOT_CREW=Rust_Wrenches_4 SPOT_FROM=26 SPOT_TO=36",
+   "score": 7.7,
+   "seconds": "26-36 s",
+   "seed": 13124,
+   "signals": [
+    "friend_s",
+    "noprog_s",
+    "wrongway_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "friend_s": 14,
+    "noprog_s": 10,
+    "spread_m": 34.6,
+    "wrongway_s": 3
+   },
+   "surprise_max": {
+    "friend_s": 3.271,
+    "noprog_s": 2.697,
+    "spread_m": 1.228,
+    "wrongway_s": 2.074
+   },
+   "team": 1,
+   "unit": "gang_support",
+   "video_id": "5b6a6ec99c35415fbfe82d31e36e9c19",
+   "video_url": "/_blob/5b6a6ec99c35415fbfe82d31e36e9c19",
+   "id": "terminus-13124-Rust_Wrenches_4-26-36"
+  },
+  {
+   "arena": "terminus",
+   "batch": "batch2",
+   "choice": "MOVE",
+   "commit": "2fc962aa6",
+   "control": false,
+   "crew": "Rust_Wrenches_5",
+   "drift_m": 0.02,
+   "length_s": 10,
+   "machine": "builder3",
+   "order": 37,
+   "rank": 86,
+   "reasons": [
+    "taking fire from behind (7 s)",
+    "hit from beyond its own range (10 s)",
+    "far from its squad (34 m)"
+   ],
+   "repro": "make spotter-clip SPOT_SEED=13124 SPOT_ARENA=terminus SPOT_CREW=Rust_Wrenches_5 SPOT_FROM=27 SPOT_TO=37",
+   "score": 7.09,
+   "seconds": "27-37 s",
+   "seed": 13124,
+   "signals": [
+    "rearfire_s",
+    "outranged_s",
+    "spread_m"
+   ],
+   "signals_max": {
+    "outranged_s": 10,
+    "rearfire_s": 7,
+    "spread_m": 34
+   },
+   "surprise_max": {
+    "outranged_s": 2.512,
+    "rearfire_s": 2.919,
+    "spread_m": 1.2
+   },
+   "team": 1,
+   "unit": "gang_support",
+   "video_id": "0b5214608539d2d57eb94c21b8443176",
+   "video_url": "/_blob/0b5214608539d2d57eb94c21b8443176",
+   "id": "terminus-13124-Rust_Wrenches_5-27-37"
+  }
+ ],
+ "labels": [
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "crossing-13121-Rust_Hunters_2-53-62",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:05.059Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "crossing-13122-Green_Eyes_2-50-59",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "crossing-13122-Green_Guns_2-19-29",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "crossing-13122-Green_Hunters_4-232-242",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:16.063Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "crossing-13123-Green_Hunters_2-58-68",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:01.959Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "crossing-13123-Green_Lances_3-40-50",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:12.659Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "crossing-13123-Rust_Guns_3-30-40",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "crossing-13124-Green_Eyes_II_1-118-128",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "crossing-13124-Green_Eyes_II_7-192-202",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "crossing-13124-Green_Hunters_2-90-100",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "crossing-13124-Green_Hunters_II_5-44-54",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "gorge-13121-Green_Guns_1-46-56",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "gorge-13121-Green_Guns_5-20-30",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "gorge-13121-Rust_Burners2_3-58-67",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:20.156Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "gorge-13121-Rust_Burners_3-151-161",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:00.080Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "gorge-13121-Rust_Hunters_3-111-121",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:43.529Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "gorge-13122-Green_Guns_1-37-45",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "gorge-13122-Green_Guns_2-101-111",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:50.764Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "gorge-13122-Green_Guns_3-100-110",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "gorge-13122-Green_Hunters_1-69-79",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:10.994Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "gorge-13122-Rust_Hunters_5-12-22",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "gorge-13124-Green_Eyes_II_4-54-64",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:20.463Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "gorge-13124-Rust_Guns2_3-76-86",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:55.918Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "gorge-13124-Rust_Guns_2-17-27",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13121-Green_Spears_2-57-64",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:04.343Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "locks-13121-Green_Wrenches_3-33-43",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13121-Rust_Burners_1-19-28",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:32.655Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "locks-13121-Rust_Hunters_2-54-64",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13121-Rust_Lances_1-76-86",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13121-Rust_Lances_2-152-162",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:53.235Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "locks-13122-Green_Sirens_3-16-26",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:47:50.833Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "locks-13122-Rust_Battery_2-190-200",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13122-Rust_Spears_3-27-36",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:47:59.253Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "locks-13122-Rust_Spears_4-41-51",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13123-Rust_Hunters_5-22-32",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13123-Rust_Sirens_2-32-42",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "locks-13124-Rust_Guns_3-209-219",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:47:23.869Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "locks-13124-Rust_Hunters2_1-57-67",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:05.634Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "locks-13124-Rust_Hunters_4-24-34",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:25.189Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "parade-13121-Rust_Guns_2-21-31",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "parade-13121-Rust_Guns_3-49-59",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:15.807Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "parade-13123-Rust_Sirens_3-32-42",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "parade-13124-Green_Eyes_II_2-17-27",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:08.631Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "parade-13124-Green_Eyes_II_6-27-37",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "parade-13124-Rust_Hunters2_4-72-82",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "parade-13124-Rust_Wrenches_2-78-88",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:10.863Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "sumps-13121-Green_Hunters_9-48-58",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:47.583Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "sumps-13121-Rust_Burners2_1-69-78",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "sumps-13121-Rust_Burners_1-18-28",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "sumps-13122-Green_Hunters_5-32-42",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:56.184Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "sumps-13122-Rust_Wrenches_5-38-48",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "sumps-13123-Green_Lances_4-99-109",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:58.206Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "sumps-13124-Rust_Guns2_3-104-114",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:22.909Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "sumps-13124-Rust_Guns_2-67-77",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:36.634Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13122-Green_Hunters_5-31-41",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:58.856Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13123-Green_Lances_4-27-37",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "terminus-13123-Rust_Eyes_2-121-131",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "terminus-13123-Rust_Eyes_3-27-37",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:06.984Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13123-Rust_Hunters_4-17-26",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:48:52.832Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13124-Green_Eyes_II_1-65-75",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:44.188Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13124-Green_Eyes_II_8-41-51",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:47:46.196Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13124-Rust_Guns_3-62-72",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:49:29.293Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13124-Rust_Wrenches_1-107-117",
+   "verdict": "dumb"
+  },
+  {
+   "at": "2026-10-31T17:50:03.789Z",
+   "by": "u_QW1NW9fYaw6GqEOT1KvYSg",
+   "clip": "terminus-13124-Rust_Wrenches_4-26-36",
+   "verdict": "dumb"
+  },
+  {
+   "assumed": true,
+   "at": "2026-10-31T18:00:00Z",
+   "by": "assumed",
+   "clip": "terminus-13124-Rust_Wrenches_5-27-37",
+   "note": "assumed dumb: he judged 64/64 flagged clips dumb (batch 1 30/30, batch 2 34/34)",
+   "verdict": "dumb"
+  }
+ ]
+}
