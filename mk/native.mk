@@ -525,3 +525,18 @@ replay-pytest: ## native: tests/replay's Python tests (rules, divergence, the pl
 	@out=$$($(PYTHON) -m unittest discover -s tests/replay -p 'test_*.py' 2>&1); echo "$$out" | tail -3; \
 	echo "$$out" | grep -qE '^Ran [1-9][0-9]* test' || { echo "replay-pytest FAILED: no tests ran"; exit 1; }; \
 	echo "$$out" | tail -1 | grep -qE '^OK' || { echo "$$out"; exit 1; }
+
+# Round 47 (native, the orchestrator's ask): one FILTER run REPEAT_N times in one process each, each run's CYCLE_ROW /
+# FAIL lines and its `N passed, M failed`, then a tally. A staged lab should answer the same every time; a varying
+# answer is a determinism finding. NATIVE=off runs the GDScript paths (make native NATIVE=off first, as check does).
+REPEAT_N ?= 10
+.PHONY: native-repeat
+native-repeat: _native-ready import ## native: FILTER run REPEAT_N times (determinism of a staged test); a tally of passed/failed runs
+	@[ -n '$(FILTER)' ] || { echo "native-repeat: FILTER= required"; exit 2; }; \
+	good=0; bad=0; \
+	for i in $$(seq 1 $(REPEAT_N)); do \
+		out=$$($(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)' 2>&1); \
+		echo "$$out" | grep -E '^(CYCLE_ROW|NOPROGRESS_ROW|  FAIL|          )' | cut -c1-400 | sed "s/^/run $$i: /"; \
+		res=$$(echo "$$out" | grep -E '^[0-9]+ passed, [0-9]+ failed' | tail -1); echo "run $$i: $$res"; \
+		case "$$res" in *" 0 failed") good=$$((good+1));; *) bad=$$((bad+1));; esac; \
+	done; echo "REPEAT_TALLY native=$(if $(filter off,$(NATIVE)),off,on) runs=$(REPEAT_N) green=$$good red=$$bad"
