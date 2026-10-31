@@ -11,6 +11,7 @@ func teardown() -> void:
 	SelectionSquads.HALT_PRICE = true
 	SelectionSquads.halt_terrain = ""
 	SelectionSquads.GROUP_GUARD = SelectionSquads.guard_default()
+	SelectionSquads.GROUP_MERGED_ALL = SelectionSquads.merged_mode() == "all"
 	super.teardown()
 
 
@@ -55,6 +56,7 @@ func _anchors(f: Fixture, squads: Array) -> Array[Vector3]:
 
 ## Three AUTO squads of five, one click: abreast, centre to centre one halt's width plus the gap, not a line's.
 func test_three_auto_squads_stand_a_halts_width_apart() -> void:
+	SelectionSquads.GROUP_MERGED_ALL = false  # R47.41: `all` (the default) files whole squads; this prices round 46's abreast lay
 	SelectionSquads.GROUP_GUARD = false  # G2 (round 45): three squads stand two and one under the guard; this prices a row of three
 	var f := Fixture.new(self)
 	await f.build_scale(15)

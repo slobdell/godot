@@ -2198,11 +2198,11 @@ const VETO_LINE_STEPS := 10
 ## spots a pitch apart. Only the merged group's plain move / attack-move (no drawn facing, not a shifted leg) and only when every
 ## seat of every file is dry, standable and passes the veto; any other click is byte-identical. And (`split`) a group partly
 ## taken by a smaller group in the same selection keeps its remainder as a squad of its number (Crossing: the Wrenches were
-## ordered loose, without a squad, because his group 4 also held the Spears' group 3). OFF (merged_default); `--group-merged=on`. Symmetric (C47.9): the CPU orders its elements one at a time (C45.5) and has no group click to merge.
-static var GROUP_MERGED := merged_default()
-## `--group-merged=all` (OFF; Bar O's READ arm, amendment 1): every plain click on 2-3 whole squads lays as the double file, merged
-## or not (his Locks click may have been two squads he box-selected; no key rows said).
-static var GROUP_MERGED_ALL := OS.get_cmdline_user_args().has("--group-merged=all")
+## ordered loose, without a squad, because his group 4 also held the Spears' group 3). ON (merged_mode: R47.41, his "Ship it ON" after Bar O2); `--group-merged=off` is round 46's. Symmetric (C47.9): the CPU orders its elements one at a time (C45.5) and has no group click to merge.
+static var GROUP_MERGED := merged_mode() != "off"
+## `all` (the DEFAULT, R47.41; Bar O2's `all` arm): every plain click on 2-3 whole squads lays as the double file, merged or not
+## (his Locks click may have been two squads he box-selected; no key rows said). `--group-merged=on`: his merged group only.
+static var GROUP_MERGED_ALL := merged_mode() == "all"
 ## At most this many files abreast (a merged group of up to fifteen); a bigger merge lays as today.
 const MERGED_FILES_MAX := 3
 ## Measurements (a probe reads them): merged clicks laid as files; merged clicks whose files the ground refused (today's lay).
@@ -2213,15 +2213,31 @@ static var merged_stepped := 0  # O1 v2: laid after stepping back from the click
 ## only at the end" (ElementPlan.MERGED_ARRIVE_FILE: own shape on the way, a file for the last stretch).
 static var MERGED_TRAVEL_FILE := OS.get_cmdline_user_args().has("--group-merged-travel=file")
 ## O1 v2: how far the double file may step back along his approach to find dry, standable seats.
+## Dev knob (O1 v3's contact read): the files stand this many squad pitches apart (`--group-merged-gap=1.5`); 1 by default.
+static var MERGED_GAP_SCALE := _merged_gap_scale()
 const MERGED_BACK_STEP_M := 4.0
 const MERGED_BACK_STEPS := 10
 
 
-## OFF since Bar O's first series failed D1 (R47.4; the files bumped 5-20x where laid, Status): `--group-merged=on` /
-## `GROUP_MERGED=on` opts in; `--group-merged=all` lays every 2-3 squad click so.
+static func _merged_gap_scale() -> float:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--group-merged-gap=") and arg.trim_prefix("--group-merged-gap=").is_valid_float():
+			return maxf(1.0, float(arg.trim_prefix("--group-merged-gap=")))
+	return 1.0
+
+
+## R47.41 (his "Ship it ON" after Bar O2 failed two guards, the stall on Sumps and the yard): `all` unless `--group-merged=off`
+## (round 46's lay) or `=on` (his merged group only); the env GROUP_MERGED takes the same values.
+static func merged_mode() -> String:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg in ["--group-merged=off", "--group-merged=on", "--group-merged=all"]:
+			return arg.trim_prefix("--group-merged=")
+	var env := OS.get_environment("GROUP_MERGED")
+	return env if env in ["off", "on", "all"] else "all"
+
+
 static func merged_default() -> bool:
-	return OS.get_cmdline_user_args().has("--group-merged=on") or OS.get_cmdline_user_args().has("--group-merged=all") \
-			or OS.get_environment("GROUP_MERGED") == "on"
+	return merged_mode() != "off"
 
 
 ## The files' heads: one per block, side by side across `heading` through the click, `gap` apart, left to right in the order the
