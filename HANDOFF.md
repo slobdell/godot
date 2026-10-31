@@ -4,7 +4,25 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-31 ~05:40 PDT — **ROUND 47 IS CLOSED (overnight, the lead asleep). NEXT: he plays the shipped game (box below), judges spotter's batch 2, then a fresh orchestrator prepares round 48 from *▶ NEXT: ROUND 48*.** **Main df9aacc1a GREEN builder3** (`make check exited 0`, 3630 passed / 0 failed, sim-baseline unmoved on all 13 maps = the adopted E10 hashes confirmed by a second read); everything after it is docs. Worktrees: main only. builder0 DOWN since 2026-10-30 ~17:35. Laptop disk 82 %. Main is unpushed (he pushes)._
+_Last updated: 2026-10-31 ~12:15 PDT — **ROUND 48 IS RUNNING (five streams, prepared before his playtest, his pick R48.1).** Launch tree = main df9aacc1a GREEN builder3 (`make check exited 0`, 3630 / 0) + docs only: workers inherit that check and do not re-run it. builder0 DOWN since 2026-10-30 ~17:35. Main is unpushed (he pushes)._
+
+## ▶ ROUND 48 IS RUNNING (launched 2026-10-31 ~12:15 PDT) — read this first
+
+**Goal: the five ways spotter caught our units looking dumb stop happening in his default game** (he judged 64 / 64 flagged clips "dumb").
+Split, ownership, contracts C48.1-C48.4, rulings R48.1-R48.3 and seeds in `_agents/workstreams.md` *Round 48*.
+
+| Stream | Folder (offset) | First item |
+|---|---|---|
+| manoeuvre | `godot-manoeuvre` (2) | class B give-way loops traced; then the fix (a held crew never leaves its post to give way) |
+| engage | `godot-engage` (5) | classes A / E at main; then Bar E11 (retreat turns and drives toward the squad) |
+| orders | `godot-orders` (6) | the follow station by heading of travel (class D #17) |
+| native | `godot-native` (4) | twins as bars arrive; contact_prototypes in C++ |
+| spotter | `godot-spotter` (8) | batch 2's numbers; class rates at main df9aacc1a (the "before" for every fix) |
+
+**For him (no hurry):** playtest round 47's ships (box below) and say what he notices; 15 clips left on spotter's batch 2 page
+https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9 (the ordinary-moment controls: the only open question his taps answer).
+
+**Kickoff prompt:** `orchestration.md` *The kickoff prompt* (the same line for every stream).
 
 ## 🏁 ROUND 47 IS CLOSED (2026-10-31 ~05:40 PDT, overnight) — read this first
 
@@ -34,7 +52,7 @@ batch1-classes.md`); the night shift on builder3 (`make spotter-night-status` / 
 **What he can playtest:** `make skirmish ARENA=crossing` as gangs v syndicate (the outranged fix, snap shots, even armies);
 `make skirmish ARENA=terminus_doors` (doors: a timed gamble on the side streets); select 2-3 squads and click one spot (side by side).
 
-## ▶ NEXT: ROUND 48 — prepare it from here (written at round 47's close)
+## (DONE: became round 48) ▶ NEXT: ROUND 48 — prepare it from here (written at round 47's close)
 
 **For him first (player terms):** judge spotter's batch 2, https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9 (80 clips, 10 hidden controls),
 and playtest the boxes above. **Starting items (from the FINAL REPORTs):**

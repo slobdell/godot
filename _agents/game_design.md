@@ -4881,3 +4881,7 @@ orchestrator decides whatever it would have recommended to him (memory: overnigh
 > "I see there are 80 "looks dumb" cases for me to review. For 100% cases that I've checked, it does in fact look dumb. THis is too much for me to review. Can we just assume that all of these results are in fact cases of units looking dumb?"
 
 What we did: he had tapped 34 of batch 2's clips, all of them flagged ones (ranks 31-78), and called all 34 dumb. With batch 1 that makes 64 of 64. The 31 remaining flagged clips are now labelled dumb on the page with `by: "assumed"` and `assumed: true`, so the ranker can tell them apart from his own taps. 15 clips stay for him: the 10 random ordinary moments and 5 flagged clips mixed in, so he still can't tell which ones are the ordinary moments. **Rule from here on:** a flagged clip counts as dumb unless he says otherwise. Later pages show him only ordinary moments plus a few flagged ones, about 15 a batch. Whether ordinary moments also look dumb is the only answer we still need from him.
+
+### His call on round 48 (2026-10-31 ~12:00)
+
+He came back to an idle builder3 ("what's the deal with this current round? ... I can see builder3 is idle") and picked **start round 48 now** over playtesting first: the agents' leftover list and spotter's five classes go first, and his playtest notes go to the owner mid-round (R48.1).

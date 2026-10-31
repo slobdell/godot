@@ -2,6 +2,69 @@
 
 > **ROUND 47 CLOSED 2026-10-31 ~05:40 PDT (seven streams + spotter, all Opus; briefs in `streams/archive/round47/`).** Round 46 CLOSED 2026-10-30 (main 7eec72b37 GREEN builder3 3517/0; shipped ON: V1 veto, L1c lane move, shortfwd, holdway native-only, then the camera planner R46.37).
 
+## Round 48: five streams (prepared 2026-10-31 midday, before his playtest; his pick)
+
+**Goal: the five ways spotter caught our units looking dumb stop happening in his default game.** He judged every flagged clip
+"looks dumb" (64 of 64 over batches 1-2; `game_design.md` *His spotter labels*, *His answer on spotter batch 2*). The classes
+(`streams/references/round47/spotter/batch1-classes.md`): **A** hurt crews retreat by abandoning the squad (engage); **B**
+squadmates jam each other in give-way loops, held crews included (manoeuvre); **C** stuck on terrain / no path and never gives up
+(manoeuvre, with the reroute call); **D** followers and slow movers drive away from where they are going (orders); **E** shot from
+beyond its range with no answer (engage; E10 shipped ON, its reverse half is open). Spotter measures each class before and after every
+ship. His playtest of round 47's ships (HANDOFF's box) comes in mid-round; the orchestrator carries his notes to the owner the same day.
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | squadmates stop backing and filling around each other; a held crew stays put; a crew stuck on a prop tries something else | M1 class B's give-way loops traced (9 clips) |
+| **engage** | `godot-engage` (5) | Opus | [streams/engage.md](streams/engage.md) | a hurt crew falls back to its squad instead of reversing 100 m away alone; an outranged crew stops backing up under fire | E1 class A on the shipped tree (does E10's retreat-to-squad already cover it?) |
+| **orders** | `godot-orders` (6) | Opus | [streams/orders.md](streams/orders.md) | a following tank no longer spins and reverses when its leader turns; the group click doesn't stall on Sumps | O1 the follow station turned by heading of travel, not nose |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | the game stays fast at the cost cap; rematches replay exactly | N1 twins as bars arrive; N2 contact_prototypes in C++ |
+| **spotter** | `godot-spotter` (8) | Opus | [streams/spotter.md](streams/spotter.md) | (dev tool) each fix comes with "this kind of dumb moment went from X to Y a fight" | S1 batch 2's numbers; S2 the class rates at main df9aacc1a |
+
+**His calls at prep (2026-10-31):** start round 48 now and fold his playtest in mid-round (R48.1).
+
+**Machines (C48.1 = C47.1's):** builder3 default for every check and series; builder0 DOWN since 2026-10-30 ~17:35 (power / network
+check is his); ONE full check + ONE judged series on builder3 at a time (the full-check lock). Five sessions on a 7 GB laptop (~2 GB
+available at prep): no local Godot runs but the lock-held laptop budget reads. 82 % disk at prep.
+
+**Ownership (round 48):** as round 47 for manoeuvre, engage, orders, native and spotter (each brief's *You own* line is the contract), plus:
+- **manoeuvre** GRANT `game/ai/pathing.gd`'s `reroute` / `reroutes` bodies and `tests/test_pathing_reroute.gd` (route is not running
+  this round; C47.3's split stands: the watchdog asks, `Pathing.reroute` decides) and `make route-trace` / `make route-census` to read.
+- **engage** keeps R47.50's grant on tank_brain.gd's `_act` arms + `withdraw_point` (RETREAT's destination is class A).
+- **orders** owns `Orders.goal_of` / `goal_position` (the follow station) and the group-click files.
+- **spotter** as round 47 (`tools/spotter/**`, `tests/spotter/**`, `mk/spotter.mk`, `references/spotter/**`,
+  `_agents/streams/references/round48/spotter/**`); read-only on every census.
+- **Nobody (the orchestrator adopts / waits for his playtest):** `arenas/**` and `game/arena/**` (mapkit not running: its next items wait
+  on his `terminus_doors` verdict), `game/camera/**`, `game/units/**`, `game/audio/**`, `tests/baselines/**`.
+
+**Contracts (round 48):**
+- **C48.1 C47.1-C47.11 stand** (bars before numbers on fresh seeds, amended at most twice; ship his fix ON as the smallest change; twins;
+  every ON sim rule carries its replay stamp entry in the same merge, lesson 354; grep the default before calling anything ON, lesson 353).
+- **C48.2 The spotter is the regression read, never the bar.** Each stream's bar names the spotter class it targets. Spotter publishes the
+  per-class rate (moments a fight, signal crew-seconds a fight) at main df9aacc1a on seeds 13121-13216 (6 maps) first, then again at each
+  green main that merges a class fix; the orchestrator relays both numbers to the owner and to him. A bar's deciding lines stay the
+  owner's own measure on its own fresh seeds.
+- **C48.3 Spotter's per-class list on request:** any stream may ask (through the orchestrator) for the class's clips at a hash; spotter
+  answers with `make spotter-clip` lines and the per-second table rows. Spotter reads `Orders.goal_position` for a follow's goal (orders'
+  R47 finding: `brain.order.goal` is not updated for follows).
+- **C48.4 Labels:** a flagged clip counts as "dumb" unless he says otherwise (his words, 2026-10-31); assumed labels carry `by: "assumed"`.
+  His own judging pages are about 15 clips: unflagged controls plus a few flagged, blind.
+
+**Seeds (round 48):** manoeuvre 13217-13312, engage 13313-13408, orders 13409-13504, native 13505-13552, spotter 13553-13744 (the night
+shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a bar). Next free: 13745.
+
+### Rulings (round 48)
+- **R48.1 (his pick, 2026-10-31 ~12:00) Start round 48 now, before his playtest of round 47's ships;** his notes go to the owning stream
+  the same day they arrive.
+- **R48.2 Five streams, all Opus.** Route, camera and mapkit do not run: route's open item (R4) is a read engage's E7 already answers and
+  the reroute body is granted to manoeuvre; camera's leftovers (the hand-over smoothing, the overpass cutaway) wait for his playtest of
+  the select-pan; mapkit's next items (doors on a dealt map, the pieces changing fights) wait on his `terminus_doors` verdict. ~2 GB of
+  laptop RAM free at prep also argues for five.
+- **R48.3 Spotter batch 2:** he tapped 34 (all flagged, all "dumb"); 31 of the rest are labelled dumb by assumption (C48.4); 15 stay on
+  his page (the 10 controls + 5 flagged, blind).
+
+### Bars (round 48)
+_(filed by each stream before any number)_
+
 ## Round 47: seven streams + spotter (prepared 2026-10-30 evening; CLOSED 2026-10-31; briefs in `streams/archive/round47/`)
 
 **Goal: his units look smart in his default game.** A crew that makes no progress notices and re-routes; a route takes the short way
