@@ -80,6 +80,15 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
 ### Bars (round 48)
 _(filed by each stream before any number)_
 
+- **Bar B (manoeuvre, heldpost; FILED 2026-10-31 before any number; text in stream/manoeuvre's brief Status).** Change: a held crew at
+  its post refuses give-way asks and offers the pass lane; a parked crew refuses instead of holding in place. Arms: OFF
+  `--traffic-off=heldpost --brains-off=native_yield` v ON default (both GDScript yield: the rule is the only difference). W1 = 48 CPU
+  feature-probe fights an arm, builder3, seed 13217+i on map i mod 6. **Deciding:** D1 jam_s (yielding / blocked-by-friendly crew-s) a
+  fight, paired ON-OFF mean < 0 and z <= -2; D2 the staged test green. **Guards:** G1 the asker's wait on a held crew heldwait_s mean <=
+  +5, z < +2; G2 friendly-contact s; G3 noprog_s; G4 survivors each team; G5 holdyield 12328 post drift <= 1.0 m; G6 authority probe
+  13019-13024 hold / stop moved_m ON <= OFF + 0.5; G7 group probe all_in_s / never_in; G8 full check green. Judge mutation self-test
+  (lesson 350); replay stamp entry in the same commit (lesson 354). Spotter's class B rate is the regression read, never this bar (C48.2).
+
 ## Round 47: seven streams + spotter (prepared 2026-10-30 evening; CLOSED 2026-10-31; briefs in `streams/archive/round47/`)
 
 **Goal: his units look smart in his default game.** A crew that makes no progress notices and re-routes; a route takes the short way
