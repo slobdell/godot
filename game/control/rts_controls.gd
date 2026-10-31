@@ -532,9 +532,13 @@ static func input_key(event: InputEvent) -> String:
 
 
 ## C47.4: name what the open input did (the last name wins: a recall then its order is the order). No window: nothing.
-func note_input(act: String) -> void:
+## `always`: the input writes its row even though neither the selection nor the orders changed (a control-group save: his
+## Crossing ctrl+4 over Spears + Wrenches left the Wrenches in no squad and wrote nothing).
+func note_input(act: String, always := false) -> void:
 	if not _inp.is_empty():
 		_inp_act = act
+		if always:
+			_inp["always"] = true
 
 
 func _flush_input() -> void:
@@ -543,7 +547,7 @@ func _flush_input() -> void:
 	var row := _inp
 	_inp = {}
 	var after := Array(selection.units).duplicate()
-	if after == row["sel_before"] and _orders_given == int(row["orders"]):
+	if after == row["sel_before"] and _orders_given == int(row["orders"]) and not bool(row.get("always", false)):
 		return
 	input_recorded.emit({"t": "inp", "f": int(row["f"]), "k": String(row["k"]), "act": _inp_act if _inp_act != "" else "?",
 			"sel_before": row["sel_before"], "sel_after": after})
@@ -978,10 +982,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if key.ctrl_pressed or key.meta_pressed:
 			if not selection.units.is_empty():
 				groups.save(number, selection.units)
-				note_input("group_save:%d" % number)
+				note_input("group_save:%d" % number, true)
 		elif key.shift_pressed:
 			if not selection.units.is_empty():
 				groups.add(number, selection.units)
+				note_input("group_add:%d" % number, true)
 				# Round 21 (orders, stretch c): Shift+N ADDS (StarCraft's meaning), which is how "1, then Shift+2" put
 				# two squads in group 2 in round 19. Said once a session, the first time he does it.
 				if not _told_shift_adds:

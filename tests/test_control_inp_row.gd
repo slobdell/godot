@@ -110,7 +110,7 @@ func test_a_key_that_changes_nothing_writes_no_row() -> void:
 	assert_eq(f.controls.selection.units.size(), 0, "nothing selected")
 
 
-func test_saving_a_group_names_it() -> void:
+func test_saving_a_group_writes_a_row_and_a_same_recall_does_not() -> void:
 	var f := await _fixture()
 	f.controls.selection.set_units(ALPHA + BRAVO)
 	_key(KEY_4, true)
@@ -119,8 +119,13 @@ func test_saving_a_group_names_it() -> void:
 	_key(KEY_4)
 	await tree.process_frame
 	var rows := _rows("inp")
-	# Ctrl+4 changes neither the selection nor an order: no row; 4 recalls the same units: no change, no row.
-	assert_eq(rows.size(), 0, "no row for a save or a recall that leaves the selection as it was: %s" % [rows])
+	# His Crossing ctrl+4 merge: a save changes neither the selection nor an order, and it is a row; 4 then recalls the same
+	# units: no change, no row.
+	assert_eq(rows.size(), 1, "one row, the save: %s" % [rows])
+	if rows.size() == 1:
+		assert_eq(String(rows[0]["act"]), "group_save:4", "named")
+		assert_eq(String(rows[0]["k"]), "Ctrl+4", "the key with its modifier")
+		assert_eq(rows[0]["sel_before"], rows[0]["sel_after"], "the selection as it was")
 
 
 func test_the_input_key_names_a_mouse_click() -> void:
