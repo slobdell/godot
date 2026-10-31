@@ -143,6 +143,18 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   **R6:** route/shortest ratio for every crew's route over fresh full fights (both sides), so any real detour class is found by
   measure, not by his eye.
 
+- **R47.13 (2026-10-30 evening) Engage's E1: his side's silence is mostly the aiming fix, and 40 % of that is a fix RESTARTED on a
+  target swap; GRANT engage `game/combat/engagement.gd`'s `Lay` (the carry-over) for E2a.** STAGED from his census, builder3, 8e51344cc
+  (= e306ce27f's code + traces), native on, six 14 s windows over his four matches, n 1 a window. Loaded crews holding fire with an
+  enemy in their own range: his side 330 s = fix 145 (44 %), friend in lane 74 (23 %), no own line 59 (18 %), other 41, unseen 11; CPU
+  367 s = no line 136 (37 %), fix 75 (20 %), lane 73 (20 %), other 79. His 23 of 58 crews in range > 2 s never fired in the window (40 %)
+  v the CPU's 12 of 62 (19 %). Fix time by design scales with distance over the crew's own sight (gang War Rig 60 m: median 1.69 v
+  1.10 s CPU); **the fault: 58 of his 145 s is a fix restarted from zero when the gun swaps targets (`Lay.engage` resets on any new
+  name, even a squadmate of the old target on the same bearing).** Order: **E2a** the lay carries over on a swap to a target on nearly
+  the same bearing (own switch, own Bar E line; the fix belongs in `Lay`, hence the grant, not a wrapper in gunnery); **E2b** under his
+  attack, "no line" goes to a nearby spot WITH a line; then **E7** (R47.6). The gun runs in C++ (NativeExec / NativeGun), so E2a needs
+  native's twin before ON (C47.6). Gang sight/range v syndicate is balance (waits; not this round).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
