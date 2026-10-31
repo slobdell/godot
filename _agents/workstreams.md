@@ -240,6 +240,17 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   neutral, with proof); (b) t.poll's order-progress pieces into the native controller (twin proof on his four); (c) report-only read of
   the ticks-a-frame cap.
 
+- **R47.28 (his ask, 2026-10-30 evening) Mapkit tests Material Maker for the kit's shared trim sheet and presents it to him on a
+  looks page.** The orchestrator's read of the repo (github.com/RodZill4/material-maker, 7d6daae 2026-10-24, MIT, Godot 4.7 like ours):
+  426 nodes (bricks, scratches, dirt, bevel, runes, glyphs, noises); a command-line export (`--export -t "Godot/Godot 4 Standard" -o <dir>
+  <file.ptex>`) writes albedo / ORM / emission / normal PNGs + a .tres; it renders on the GPU (a real display: builder3's Xorg :1 under
+  R47.23, or the laptop under the lock). Our city blocks are texture-free world-space shaders; this is for the NEW kit pieces only.
+  **Item P1b:** pin Material Maker at a commit OUTSIDE the repo (`~/tools/material-maker`, its own folder; read its export path before
+  running it); a recipe (.ptex) committed under `assets/props/trim/` with a make target that regenerates the sheet; ONE trim sheet
+  (metal plate, hazard stripes, grime, glowing joints; <= 1024 px, laptop cost stated) on his picked pieces (traps a, overpass c, pipes b,
+  crane a); the looks page shows each piece **plain (flat colour + painted glow) v Material Maker sheet** side by side at his camera, with
+  the laptop fps of each, and his pick in its `db`. No paid generation.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
