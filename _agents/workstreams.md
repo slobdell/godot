@@ -387,6 +387,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   map; the twins stay candidates for his eye. Next for mapkit: the blast doors in a REAL arena candidate (the native door mask is on main),
   then a screens workload staged from his Crossing positions.
 
+- **R47.46 Main 9e45fd0db GREEN builder3 (`make check exited 0`, 3612 / 0).** Since then merged: manoeuvre ead694538 (holdyield ON, GREEN
+  3609/0), native e5fa1f1be (flake fix, lines_r47; GREEN 3608/0), orders d27c3a4f6 (group click ON, `merged_mode` default "all", GREEN
+  3609/0) = de3176388. **Engage's E3 ship 96a3110b0: `exited 2`, 3610/1** — (1) the sim-baseline moved on all 13 maps (E3 + R47.44's
+  bounded halt variant `short_halt_unfired`, which changes OFF games too): the orchestrator adopts it twice after the merge; (2)
+  test_control_dials::test_the_rig_frames_with_its_inset red in 2 of engage's 3 checks, green on main: orders asked to harden it;
+  (3) native-verify-scenarios red on scenario_cp2's engine-deck coin flip (OFF 1/6, ON 2/6 offsets): **GRANT engage scenario_cp2.gd** to
+  judge it over 6 FRESH offsets (x -3..+3 step 0.5), summed hits >= 120 and deck share >= 0.5, filed in the commit before the run. Also:
+  GRANT spotter one additive Makefile line (LIGHT_GOALS += spotter targets).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
