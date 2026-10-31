@@ -18,7 +18,7 @@ import sys
 # The probe's raw keys (tests/spotter/feature_probe.gd) that the table keeps as they are.
 FIELDS = ["fight", "arena", "seed", "s", "tick", "crew", "team", "unit", "loco", "squad", "x", "z", "yaw", "speed", "vmax", "hp",
           "order", "move", "weap", "phase", "blocked", "touch", "touch_cause", "touch_what", "intent", "choice", "shots",
-          "range", "arc", "seen", "near_enemy", "since_fire", "lane_blocker", "to_go", "gain_2", "gain_5", "route_off",
+          "range", "arc", "seen", "near_enemy", "near_any", "since_fire", "lane_blocker", "to_go", "gain_2", "gain_5", "route_off",
           "squad_d", "squad_n", "hit_dmg", "fire_off", "fire_far"]
 
 # Derived signals, each with what a player would see (the moment's readable reason) and its unit.
@@ -89,6 +89,10 @@ def derive(header, rows, fight=""):
         runs = {k: 0.0 for k in SIGNALS if k.endswith("_s")}
         prev = None
         for row in seq:
+            if row.get("order") == "follow" and not row.get("follow_live"):
+                # Fights probed before the follow fix carry the follow's frozen order goal, not the station it drives to:
+                # no progress / wrong way are unknowable there (orders, round 47), so those rows carry no goal.
+                row = {k: v for k, v in row.items() if k not in ("to_go", "gain_2", "gain_5", "route_off")}
             moving_order = row.get("move") == "move_to"
             speed = _f(row, "speed")
             still = abs(speed) < SLOW_MPS

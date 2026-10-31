@@ -90,80 +90,67 @@ S4's labels.
 
 ## Status
 
-_(updated 2026-10-31 ~00:10 PDT by the spotter worker; every number names its commit, machine, workload and n)_
+_(updated 2026-10-31 ~04:20 PDT by the spotter worker; every number names its commit, machine, workload and n)_
 
-### Plan (smallest foundation first)
-S1 probe (it is what S0 runs) -> S2 ranker -> S0 the night shift -> S3 clips -> S4 judging page (his gate) -> S5 label reader ->
-S6 (after a few hundred labels) -> stretch. S1 came before S0 because the night shift's frame needs a real batch to prove itself on.
+### Report (top)
+- **Branch tip GREEN: a414cdba1** (builder3, `make check exited 0`, 3608 passed / 0 failed, 29 targets ALL JUDGED, 2026-10-31 ~04:20;
+  covers the LOS / follow probe fixes, batch 2 tooling, the batch 2 page, the classes doc). Merge here.
+- **Merged to main** by the orchestrator: stream/spotter 213f5d070 (check GREEN at **9858da23f**: builder3, `make check exited 0`,
+  3608 passed / 0 failed, 29 targets ALL JUDGED). Later commits on the branch are spotter paths only (Python, the probe, the pages,
+  docs). The newest probe change (LOS + follow goal, tests/spotter/feature_probe.gd) has run in batch 2's 24 fights with no engine
+  errors but no full check; the last full check on this branch is 9858da23f.
+- **His gate S4: batch 1 judged, 30 of 30 "looks dumb"** (no notes; his words via the orchestrator: "all cases it exposed looked
+  like dumb behavior"). Precision of the top 30 = 1.00 (n = 30, no negatives).
+- **S5 done for batch 1:** `_agents/streams/references/round47/spotter/batch1-classes.md` (5 cause classes, every crew with
+  seconds, peak tick, per-second context, clip, reproduction line). Routed by the orchestrator (R47.48): A RETREAT abandoning the
+  squad and E outranged / no answer -> engage (E10); D -> orders; B give-way loops and C stuck on terrain / no_path -> round 48's
+  manoeuvre. Class D's FOLLOW rows were a probe artifact (orders reproduced it; amended in the doc).
+- **Batch 2 is UP for him (04:15):** main **2fc962aa6**, builder3 (`night.sh batch-now`, nice 19), 24 fresh fights (6 maps x seeds
+  13121-13124, 240 s), 113,636 crew-seconds, 4,002 moments; the page shows **ranks 31-100 + 10 hidden random controls** (ordinary
+  windows the ranker did not flag), shuffled, reasons hidden until he taps: https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9
+  80/80 clips reproduced their moment (drift <= 0.07 m), re-ranked with the follow fix before upload. The clips' burned-in caption
+  carried the reasons (it would have given the controls away): batch 2's clips got a black caption band (ffmpeg, NVENC); future
+  blind batches use `clips --blind` / `SPOT_BLIND=1`. It answers where precision drops and the base rate.
+- **S6 waits for negatives:** 30 positives train nothing. Floor: ~100 "fine" and ~100 "dumb" for an 18-feature model's held-out
+  AUC to mean anything; 300+ to trust it per class. `tools/spotter/learn.py` is ready (stdlib logistic regression, K-fold by seed,
+  v the hand score); a GPU buys nothing at this size (frame models only if it plateaus).
+- **S0 night shift:** installed on builder3, cron every 5 min, green ref pushed by the orchestrator after each green main (now
+  2fc962aa6). It has NOT yet run a batch unattended: the box was never idle 10 min tonight (back-to-back checks). Its pieces are
+  proven separately: the yield / lock / STOP frame (test_night.sh 15/0), the tree checkout of a named commit with the kit laid over
+  it, batches, ranking, clips, SUMMARY.md (batch-now, the same code path minus the idle gate and the yield).
 
-### Done so far
-- **S1 the feature table** (1f3d4b517): `tests/spotter/feature_probe.gd` listens to a showmatch fight (`--skirmish --demo-match`,
-  native, the shipped default) and writes one row per live crew per second: position, heading, speed, hp, order / move / weapon
-  order, phase, blocked_by, wall contact (cause, collider), route metres to its goal (NoProgressCensus's navigation query) and
-  its gain over 2 / 5 s, nose v route, visible enemies and the nearest one's distance, shots, ticks since fire, lane blocker,
-  squad centroid distance, incoming damage and how far off the nose / how far away it came from. Read-only. `tools/spotter/
-  features.py` derives eleven signals with words and run lengths (no progress, wall, friend-blocked, reversing, wrong way,
-  holding fire in range, rear fire, outranged, still under fire, far from squad, spinning) and a floor under which each reads 0.
-  Trial: 1209a934f+, builder3 light lane, terminus + crossing seed 13121, 90 s: 6511 crew-seconds, no engine errors; the hull
-  forward (-Z) agrees with the displacement on 98.9 % of 1225 moving samples.
-- **S2 the ranker** (`tools/spotter/rank.py`): per unit class, an empirical tail (-log10 of the share at or above the value: a
-  non-parametric robust z), a crew-second scores its two largest, hot seconds merge into moments, top N with 8 a fight / 1 a
-  crew, each with readable reasons + a reproduction line -> moments.json / moments.md. Trial (same 2 fights): 231 moments; the top
-  ones were crews boxed by squadmates and reversing (terminus Rust_Hunters_1 55-63 s; crossing Rust_Burners2_4 41-47 s).
-- **S0 the night shift** (046082c52 + fixes): `tools/spotter/night.sh` on builder3, cron every 5 min (`crontab -l` there, marked
-  `# spotter-night`). Runs only after the box has been idle 10 min: nobody holds `~/tank_squad/.full-check.lock` and no process of
-  anyone else runs in a `~/tank_squad/<folder>` (checks, queued checks, quick-remotes, series, light runs, renders all do).
-  Batches run `nice -n 19 ionice -c3` in their own process group, never take a slot (TANK_SQUAD_SLOT=night past the Makefile
-  gate) or the lock; a watcher re-asks every 10 s and kills the group the moment the box is busy (yield <= ~15 s). Each finished
-  fight is a checkpoint (killed fights leave .part and re-run). Game = a NAMED commit: `refs/heads/green` in
-  builder3's bare `~/spotter-night/repo.git` (cloned from GitHub once; `make spotter-night-push SHA=` sends only that commit's
-  missing objects), checked out clean in `~/tank_squad/spotter-night` with the spotter kit laid over it (dev tooling only).
-  Output `~/spotter-night/<date>/<commit>/` + one-page `SUMMARY.md`; disk cap 20 GB (oldest days first; builder3 had 152 GB free).
-  `tests/spotter/test_night.sh` 15/0 (idle runs, yield in 6 s at a 1 s poll and the batch's whole group killed, busy never
-  starts, idle wait, lock = busy, STOP). Installed 2026-10-30 23:50; green = **09780edb9** (main, builder3 3569/0). At 00:02 it
-  was correctly waiting (manoeuvre's full check held the lock). **Proof run: pending the first idle window tonight.**
-- **S3 clips** (0641c90a9): `tests/spotter/clip_probe.gd` + `tools/spotter/clips.py`. **The display question, answered:** builder3
-  has no Xvfb and no root, so the distro's xvfb package was fetched with `apt download` and extracted to `~/tools/xvfb` (no root,
-  no missing libs). Godot on it draws with Mesa llvmpipe (NVIDIA's GL needs its own X server): the same gl_compatibility renderer
-  his game uses, rasterized on the CPU; the GPU encodes (h264_nvenc). His desktop :1 is never touched. The fight replays from its
-  seed with rendering off, then every tick is rendered from a near-top-down camera following the crew (a 50-degree view let a
-  building hide the crew), a yellow marker over it, a caption with its reasons. **Each clip checks the crew's position at the
-  moment's peak tick against the table:** 3/3 reproduced, drift 0.02-0.05 m (1209a934f+, builder3 light lane, ~41-98 s a clip).
-- **S4 page** drafted (`references/spotter/judge/index.html`): clips from the page's db, three taps + a note per clip, labels in db.
-- **S5** `tools/spotter/labels.py` (precision overall / top 10-30, signals dumb v fine, the dumb ones as findings with repro lines).
+### Probe bugs found and fixed (each found by reading a judged batch)
+1. `near_enemy` read `OrderController.visible_enemy_names`, filled only for halt_on_contact reflexes: -1 in every batch 1 row, so
+   "enemy in sight and in range, not firing" never fired (engage's hold-fire class was invisible). Now the probe's own pure LOS ray
+   (Perception.has_line_of_sight, sight radius). Batch 2: enemy in sight in 44,687 of 113,636 crew-seconds; hold-fire 9,403.
+2. A follow's `brain.order.goal` is never updated (the drive follows the live station): "goal getting farther" was false for
+   follows. Now the mover's live goal; older follow rows carry no goal (features.py).
+3. Clip frame 0 showed the showmatch's own camera for one frame: 4 unsaved warm-up ticks.
 
-- **S4 the judging page is UP (his gate): https://claude.ai/artifact/DXKpD67u2r49HQrk93ozJD** (URL sent to the orchestrator
-  00:45). Batch 1: stream/spotter tree (1209a934f + spotter), builder3 light lane, 12 fights (6 maps x seeds 13215-13216, 240 s),
-  52,487 crew-seconds, 1,557 moments, top 30 as clips: **30/30 reproduced their moment** (crew 0.02-0.07 m from the table at the
-  peak tick). db: `clips/<arena-seed-crew-from-to>` (write admin; checked: a Contributor's write is refused, a Viewer reads) and
-  `labels/<same id>` {verdict dumb|fine|unsure, note, by, at} written by his taps. Videos are the page's assets. Local copy of
-  the batch: `~/spotter-work/batch1/` (laptop). What the 30 are, by brain choice: RETREAT 5, MOVE 12, HOLD 6, FOLLOW 3, ENGAGE 2,
-  SPOT 2. A RETREAT driving away from its route is by design; his taps will say whether it LOOKS dumb (S5 then down-weights).
-- **Stretch: his recordings** (`tools/spotter/recording.py`, 5020d4dd8): the census rows of a recording ARE his match, so ranking
-  them needs no replay. Over his four round-46 playtests, his side (team 0), 9,879 crew-seconds: #1 Sumps Green_Alpha_5 101-113 s
-  (blocked by a friendly 13 s, no progress 9 s), #2 Sumps Green_Charlie_5 33-57 s (no progress 25 s), **#3 Locks Green_Hunters_4
-  33-56 s (far from its squad 42.5 m, no progress 24 s) = his own Locks complaint (the IFV that drove away from his attack target
-  on the ~230 m detour), found with no hint.** Straight-line goal distance only (the census has no route), no shooter on hits.
-- **Stretch: the parameter search, a proposal** (`references/spotter/param_search_proposal.md`): which constants (Movement STUCK /
-  UNSTICK / REPATH / FOLLOW / WAIT, TankBrain LANE_SEARCH, FOLLOW_DISTANCE), the prerequisite (a behaviour-knob registry on the
-  existing `--tune=` path: owners' edits), objective (dumb-signal seconds paired by seed v the default arm), guards, output (a
-  frozen table as a proposal to the owner). After S5's labels, not before.
-- **Night shift green = 8d37b9796** (pushed 00:20 at the orchestrator's word; the orchestrator pushes each green main from now on).
-
-### In flight
-- Full check of **5020d4dd8** on builder3 (queued on the full-check lock since 00:04; several checks ahead of it).
-- The night shift's first idle window (the box has been busy with checks all evening; it starts 10 min after they stop).
+### Done (the pieces)
+- **S1** `tests/spotter/feature_probe.gd` (one row per crew-second, read-only) + `tools/spotter/features.py` (11 signals with words,
+  run lengths, floors). **S2** `tools/spotter/rank.py` (per-class empirical tail, moments, caps, reasons, reproduction lines,
+  `--controls N`). **S3** `tests/spotter/clip_probe.gd` + `tools/spotter/clips.py`: offscreen Xvfb extracted without root to
+  builder3 `~/tools/xvfb` (his desktop :1 never used), Mesa llvmpipe = his gl_compatibility renderer, NVENC encode, near-top-down
+  follow camera, marker + caption, **drift check** at the peak tick: batch 1 30/30 within 0.02-0.07 m; 10 s cap; `--ranks A-B`.
+  **S4** pages `references/spotter/judge/index.html` (batch 1) and `judge2/` (batch 2), db `clips` (write admin; checked) +
+  `labels`, videos as page assets; `tools/spotter/judge_docs.py` builds the clip docs. **S5** `tools/spotter/labels.py` + the
+  classes doc. **S6** `tools/spotter/learn.py` (+ test). **S0** `tools/spotter/night.sh` + `mk/spotter.mk` targets.
+- **Stretch:** `tools/spotter/recording.py` ranks HIS recordings from their own census (his Locks Hunters_4 detour came out #3 of
+  his side unprompted); `references/spotter/param_search_proposal.md` (proposal only: constants, the knob-registry prerequisite,
+  objective, guards; after labels).
 
 ### How to stop / remove the night shift
-`make spotter-night-stop` (or on builder3 `~/spotter-night/bin/night.sh stop`), `make spotter-night-start` to resume,
-`make spotter-night-uninstall` removes the cron line (data stays in `~/spotter-night`; `rm -rf` it to free the disk).
-`make spotter-night-status` says what it is doing and what holds the box.
-
-### Requests / merge notes
-- `mk/spotter.mk` is new; `include mk/*.mk` picks it up. **Makefile: ONE additive line** above `_SLOT_GOALS` (granted R47.46):
-  `LIGHT_GOALS += spotter-night-% spotter-test spotter-rank`.
-- The orchestrator runs `make spotter-night-push SHA=<green>` after each green main check (agreed 00:20).
-- Not mine, left untracked: `tests/test_authority_press_on.gd.uid`, `tests/test_gunnery_pot_shot.gd.uid` (main's tests' .uid).
+`make spotter-night-stop` / `-start` / `-status` / `-uninstall` (data stays in builder3 `~/spotter-night`; cap 20 GB).
 
 ### Questions for the lead
-- (none yet; S4's taps are his gate)
+- None blocking. Batch 2's page is his next gate (no hurry).
+
+### Requests / merge notes
+- `mk/spotter.mk` is new (globbed). Makefile: one additive line `LIGHT_GOALS += spotter-night-% spotter-test spotter-rank` (R47.46).
+- Not mine, left untracked: `tests/test_authority_press_on.gd.uid`, `tests/test_gunnery_pot_shot.gd.uid`.
+
+### Next steps
+1. (done) batch 2 uploaded and messaged. 2. When he judges: labels.py (precision by rank band,
+control base rate), classes for any new causes. 3. Once ~100 fine + 100 dumb exist: learn.py v hand. 4. Watch for the night
+shift's first unattended run (SUMMARY.md in builder3 `~/spotter-night/<date>/`).

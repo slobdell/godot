@@ -203,6 +203,28 @@ tick() {
 	rm -f "$STATE/runner.pid"
 }
 
+batch_now() { # $1 = seeds, $2.. = extra make variables: a batch a SESSION asked for (the orchestrator's batch 2): no idle wait and
+	# no yield (the box is rarely idle by day), still nice 19 / ionice idle and never a slot; holds the runner lock so a cron tick
+	# cannot start beside it. Output in today's commit folder, like a night batch (the night continues from the next seeds).
+	exec 9>"$STATE/runner.lock"
+	flock -n 9 || { echo "batch-now: a night batch is running; stop it first (night.sh stop)"; exit 1; }
+	local seeds=$1
+	shift
+	local sha cdir
+	sha=$(pick_commit) || { echo "batch-now: no commit"; exit 1; }
+	prepare_tree "$sha" || { echo "batch-now: checkout of $sha failed"; exit 1; }
+	cdir=$NIGHT/$(date +%F)/${sha:0:9}
+	mkdir -p "$cdir/fights"
+	log "batch-now: seeds '$seeds' $* -> $cdir"
+	(cd "$TREE" && nice -n 19 ionice -c3 env TANK_SQUAD_SLOT=night TANK_SQUAD_COMMIT="${sha:0:9}" \
+		make --no-print-directory spotter-batch SPOT_DIR="$cdir/fights" SPOT_SEEDS="$seeds" SPOT_MAPS="$MAPS" \
+		SPOT_SECONDS="$SECONDS_PER_FIGHT" SPOT_JOBS="$JOBS" "$@") >>"$cdir/batch.log" 2>&1
+	local rc=$?
+	summary "$NIGHT/$(date +%F)" "$cdir"
+	log "batch-now done: rc $rc"
+	echo "batch-now: rc $rc -> $cdir"
+}
+
 status() {
 	echo "night shift on $(hostname), $(date '+%F %T %Z')"
 	if [ -e "$STATE/STOP" ]; then echo "  STOPPED (night.sh start clears it)"; fi
@@ -238,6 +260,7 @@ status) status ;;
 stop) stop ;;
 start) rm -f "$STATE/STOP"; log "start: STOP cleared"; echo "STOP cleared: the next idle tick runs" ;;
 busy) busy_reason ;;
+batch-now) shift; batch_now "$@" ;;
 cron-install) # every 5 min, from this script's installed path (the line is marked so cron-remove finds only ours)
 	line="*/5 * * * * $NIGHT/bin/night.sh tick >> $STATE/cron.log 2>&1 # spotter-night"
 	{ crontab -l 2>/dev/null | grep -v '# spotter-night'; echo "$line"; } | crontab - && crontab -l | grep '# spotter-night' ;;
