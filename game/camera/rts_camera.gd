@@ -362,6 +362,7 @@ var pan_screens := PAN_SCREENS_PER_S
 ## further (Crossing tick 690: 35 m off at 100 m, his squad at the edge). Part of `select_pan`.
 const SEL_BOUND_M := 20.0
 var select_pan := true
+var sel_bound := SEL_BOUND_M  # `--camera-sel-bound=M` (dev; 0 = no bound)
 var _select_at := -1e9
 
 var _shown_focus := Vector3.ZERO
@@ -498,6 +499,7 @@ func _ready() -> void:
 	planner_on = flags.text("camera-planner", "on") != "off"  # round 46 (R46.23): ON for his answer; =off = round 45's camera
 	select_pan = flags.text("camera-select-pan", "on") != "off"  # round 47 (K2/K3): ON; =off = round 46's urgent pan
 	pan_screens = float(flags.text("camera-pan-screens", str(PAN_SCREENS_PER_S)))  # dev only: a bar runs at the constant
+	sel_bound = float(flags.text("camera-sel-bound", str(SEL_BOUND_M)))  # dev only
 	_plan_log = flags.has("camera-trace")
 	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
 	# Round 46 (C5): a headless replay frames at his screen's shape (`--camera-screen=1920x1080`; headless roots are 64x64).
@@ -714,6 +716,11 @@ func aiming_now() -> bool:
 	if _aim_spent_at >= _mouse_moved_at or still >= HOVER_HOLD_S:
 		return false
 	return still >= DWELL_S or (aiming.is_valid() and bool(aiming.call()))
+
+
+func _normal_top_speed() -> float:
+	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
+	return minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom))
 
 
 ## The top speed of an automatic focus move (m/s): GLIDE_SCREENS_PER_S heights of the ground in view at the shown
@@ -2119,8 +2126,8 @@ func _update_planner(points: Array, destination: Variant) -> void:
 			framed.append(RtsCamera.inside_wall(contact[0] as Vector3, CameraPlanner.WALL_MARGIN_M))
 		var wide := CameraPlanner.fit(framed, null, yaw, world)
 		goal = [(goal[0] as Vector3).lerp(wide[0], _wide_mix), lerpf(float(goal[1]), float(wide[1]), _wide_mix)]
-	if select_pan:
-		goal[0] = RtsCamera.bound_to(goal[0], own, SEL_BOUND_M)
+	if select_pan and sel_bound > 0.0:
+		goal[0] = RtsCamera.bound_to(goal[0], own, sel_bound)
 	zoom = float(goal[1])
 	focus = look_clamp(goal[0])
 	wrote["focus"] = "select" if planner_urgent else "planner"
@@ -2148,7 +2155,9 @@ func _pan_urgent() -> bool:
 		mean += at
 	mean /= float(own.size())
 	var gap := Vector2(mean.x - _shown_focus.x, mean.z - _shown_focus.z).length()
-	if gap <= PAN_ARRIVE_M:
+	# Arrived: near his selection AND slowed to the glide's own pace (ending at full speed left the glide to brake or coast
+	# ~12 m: dev 7001-7004 at 0927ea3e0, 'planner' jerks 1.7 -> 7.3/min).
+	if gap <= PAN_ARRIVE_M and (not planner_urgent or _focus_velocity.length() <= _normal_top_speed()):
 		_pan_until = -1e9
 		return false
 	if planner_urgent:
