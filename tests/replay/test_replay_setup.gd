@@ -183,3 +183,16 @@ func test_a_group_clicks_direct_rows_name_his_loose_crews() -> void:
 	assert_eq(merged[0]["loose"], ["W_1", "W_2"], "the direct rows' crews")
 	assert_eq(merged[0]["to"], [80.9, 49.5], "the click is re-laid from his cursor")
 	assert_false(merged[1].has("loose"), "a single row is no group click: nothing to free")
+
+
+## Round 47 (N0): his garage fights (Sumps, Parade) loaded armies from his own user://; the replay rebuilds them from the header.
+func test_his_garage_army_is_rebuilt_from_the_header_roster() -> void:
+	var header := {"units": [_unit("Green_Bravo_2", "tank", 0), _unit("Green_Alpha_1", "scout", 0), _unit("Green_Bravo_1", "ifv", 0),
+			_unit("Rust_Big_Guns_1", "artillery", 1), _unit("Green_Alpha_2", "scout", 0)]}
+	var green := ReplaySetup.army_from_header(header, 0)
+	assert_eq((green["squads"] as Array).map(func(q: Dictionary) -> String: return q["name"]), ["Bravo", "Alpha"], "first appearance")
+	assert_eq(green["squads"][0]["units"], [{"unit": "ifv"}, {"unit": "tank"}], "by number")
+	assert_eq(ReplaySetup.army_from_header(header, 1)["squads"][0]["name"], "Big_Guns")
+	var flags := {"flags": {"player": "user://doctrines/surely_not_here_47.json", "enemy": "res://doctrines/flame_rush.json",
+			"garage-army": "user://doctrines/surely_not_here_47.json"}}
+	assert_eq(ReplaySetup.missing_armies(flags), {"player": 0, "garage-army": 0}, "a res:// army and a present file are his as they are")

@@ -137,6 +137,45 @@ static func _roster(rows: Array) -> Array:
 ## and signals each), all on one tick with the same verb, point, target and queue. Replayed one squad at a time it is a
 ## different order (the group click lays the squads out together, an attack shares its target among them), so rows a
 ## hand could only have given in one click are merged back into one order over the union of their units. Pure.
+## Round 47 (N0): an army his match loaded from HIS user:// (a garage army, the garage's generated enemy: his Sumps and Parade),
+## rebuilt from the header's roster: one squad per name in order of first appearance ("Green_Alpha_3" -> squad "Alpha"), its units'
+## ids in their number order. What the file held beyond that (a squad's formation or directive) the header does not record.
+static func army_from_header(header: Dictionary, team: int) -> Dictionary:
+	var squads: Array = []
+	var by_name := {}
+	for unit: Dictionary in header.get("units", []):
+		if int(unit.get("team", -1)) != team:
+			continue
+		var parts := String(unit.get("name", "")).split("_")
+		if parts.size() < 3:
+			continue
+		var squad_name := "_".join(parts.slice(1, parts.size() - 1))
+		if not by_name.has(squad_name):
+			by_name[squad_name] = {"name": squad_name, "units": []}
+			squads.append(by_name[squad_name])
+		(by_name[squad_name]["units"] as Array).append({"unit": String(unit.get("id", "")), "n": int(parts[parts.size() - 1])})
+	for squad: Dictionary in squads:
+		var units: Array = squad["units"]
+		units.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["n"]) < int(b["n"]))
+		squad["units"] = units.map(func(u: Dictionary) -> Dictionary: return {"unit": u["unit"]})
+	return {"name": "his army (rebuilt from the recording)", "squads": squads}
+
+
+## The launch switches naming an army file of his that this machine does not have: switch -> team (player / garage-army: 0,
+## enemy: 1), for the replay to point at army_from_header's rebuild.
+const ARMY_SWITCHES := {"player": 0, "garage-army": 0, "enemy": 1}
+
+
+static func missing_armies(header: Dictionary) -> Dictionary:
+	var out := {}
+	var flags: Dictionary = header.get("flags", {})
+	for key: String in ARMY_SWITCHES:
+		var value := String(flags.get(key, ""))
+		if value.begins_with("user://") and not FileAccess.file_exists(value):
+			out[key] = ARMY_SWITCHES[key]
+	return out
+
+
 static func merge_clicks(orders: Array) -> Array:
 	var out: Array = []
 	for row: Dictionary in orders:

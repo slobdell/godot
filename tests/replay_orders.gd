@@ -90,6 +90,20 @@ func _run() -> void:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
 		if not flags.values.has(parts[0]):  # a switch on the command line wins (an A/B of the replay)
 			wanted.append(extra)
+	# Round 47 (N0): an army file of his this machine does not have (his Sumps and Parade were garage fights) is rebuilt from the
+	# header's roster under user://replay/ and named on the replay's command line in its place (a switch there wins).
+	var missing := ReplaySetup.missing_armies(header)
+	for key: String in missing:
+		if flags.values.has(key):
+			continue
+		var army := ReplaySetup.army_from_header(header, int(missing[key]))
+		var rebuilt := "user://replay/army_%s.json" % ("green" if int(missing[key]) == 0 else "rust")
+		DirAccess.make_dir_recursive_absolute("user://replay")
+		var out := FileAccess.open(rebuilt, FileAccess.WRITE)
+		out.store_string(JSON.stringify(army, "  ", false))
+		out.close()
+		wanted.append("--%s=%s" % [key, rebuilt])
+		print("REPLAY_ARMY_REBUILT " + JSON.stringify({"switch": key, "his": header["flags"][key], "squads": (army["squads"] as Array).size()}))
 	for key: String in ReplaySetup.match_switches(header):
 		if not flags.values.has(key) and not wanted.any(func(w: String) -> bool: return w.begins_with("--%s=" % key) or w == "--" + key):
 			var value := String(header["flags"][key])
