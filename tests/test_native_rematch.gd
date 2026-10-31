@@ -15,6 +15,10 @@ func _run(names: Array) -> Array:
 	if reset.contains("world"):
 		# A fresh World3D: a new physics space (Jolt's bodies, broadphase, contact cache) and a new navigation map.
 		tree.root.world_3d = World3D.new()
+	elif reset.contains("held"):
+		# The swap with the old World3D held until the viewport has let go of it (else the engine frees it first and reports
+		# its scenario as null), and the old world's environments carried over.
+		FreshWorld.apply(tree.root)
 	elif reset.contains("own"):
 		# The same through Viewport.own_world_3d: toggled off and on, the viewport makes itself a new World3D.
 		tree.root.own_world_3d = false

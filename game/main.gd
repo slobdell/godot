@@ -41,6 +41,13 @@ var local_controller: Node
 @onready var arena: Node3D = $Arena
 
 
+## Round 48 (native N3, R48.5): every match on a fresh World3D (physics space + navigation map): the old scene has left the tree,
+## this scene's children have not entered yet. A rematch / ARMY / garage FIGHT is now the first match of a process, tick for tick
+## (test_native_rematch). `--fresh-world=off`: the world the process started with (round 47's).
+func _enter_tree() -> void:
+	FreshWorld.apply(get_viewport())
+
+
 func _ready() -> void:
 	flags = next_flags if next_flags != null else LaunchFlags.from_environment()
 	next_flags = null

@@ -156,6 +156,9 @@ func _run() -> void:
 			print("          defines %s: TestCase calls only teardown(), never these (arm in each test, or in a helper the test"
 					% ", ".join(hooks) + " calls)")
 			continue
+		# Round 48 (native N3, R48.5): each FILE starts on a fresh World3D (physics space + navigation map), so a test no longer
+		# moves with the files run before it in its shard (R47.47: the sliver lab red only after test_manoeuvre_face_settle).
+		FreshWorld.apply(root)
 		for method in script.get_script_method_list():
 			var method_name: String = method["name"]
 			if not method_name.begins_with("test_"):
