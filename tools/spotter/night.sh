@@ -17,7 +17,9 @@
 # WHAT RUNS: main's game at a NAMED commit (refs/heads/green in ~/spotter-night/repo.git, pushed by `make spotter-night-push
 # SHA=<green hash>`; else origin/main as GitHub has it), checked out clean into ~/tank_squad/spotter-night, with the spotter kit
 # (tools/spotter, tests/spotter, mk/spotter.mk, installed by `make spotter-night-install`) laid over it. The game code is the named
-# commit's; the kit is dev tooling. Each batch: NIGHT_MAPS x the next NIGHT_SEEDS_PER_BATCH seeds of 13121-13216 (R47.40), then
+# commit's; the kit is dev tooling. Each batch: NIGHT_MAPS x the next NIGHT_SEEDS_PER_BATCH seeds of 13121-13216 (R47.40; a seed
+# done for this commit on ANY day counts), then of 13553-13744 (round 48, S4: the box stays busy once the fixed set is done); then
+# the class rule over every fight of the commit (tools/spotter/classes.py -> <commit>/classes/, paired v df9aacc1a), then
 # the rank over every fight of that commit, the top NIGHT_CLIPS (30) as clips (tools/spotter/clips.py; ones already rendered are
 # kept) -> ~/spotter-night/<date>/<commit>/, and SUMMARY.md rewritten (the checkpoint).
 #
@@ -41,6 +43,9 @@ PER_BATCH=${NIGHT_SEEDS_PER_BATCH:-2}
 CLIPS=${NIGHT_CLIPS:-30}
 SEED_FIRST=${NIGHT_SEED_FIRST:-13121}
 SEED_LAST=${NIGHT_SEED_LAST:-13216}
+# Round 48 (S4): once a commit's fixed set is done (on any day), keep the box busy on new seeds of that commit.
+SEED2_FIRST=${NIGHT_SEED2_FIRST:-13553}
+SEED2_LAST=${NIGHT_SEED2_LAST:-13744}
 export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
 
 mkdir -p "$STATE"
@@ -92,15 +97,39 @@ prepare_tree() { # $1 = commit: a clean checkout of it + the kit, the import cac
 	log "tree: $sha (kit $(cat "$KIT/.kit-commit" 2>/dev/null)) checked out in $TREE"
 }
 
-next_seeds() { # $1 = fights dir: the next PER_BATCH seeds with any fight not finished
-	local dir=$1 seed arena out=() missing
-	for ((seed = SEED_FIRST; seed <= SEED_LAST; seed++)); do
-		missing=0
-		for arena in $MAPS; do [ -s "$dir/$arena-$seed.jsonl" ] || [ -s "$dir/$arena-$seed.jsonl.gz" ] || missing=1; done
-		[ $missing = 1 ] && out+=("$seed")
-		[ ${#out[@]} -ge "$PER_BATCH" ] && break
+commit_fight_dirs() { # $1 = short commit: every date folder's fights of that commit (a commit's fights count on any day)
+	local d
+	for d in "$NIGHT"/20[0-9][0-9]-*/"$1"/fights; do [ -d "$d" ] && echo "$d"; done
+}
+
+next_seeds() { # $1 = short commit: the next PER_BATCH seeds with any fight not finished on any day, the fixed set first
+	local sha9=$1 seed arena out=() missing d dirs
+	dirs=$(commit_fight_dirs "$sha9")
+	for range in "$SEED_FIRST $SEED_LAST" "$SEED2_FIRST $SEED2_LAST"; do
+		set -- $range
+		for ((seed = $1; seed <= $2; seed++)); do
+			missing=0
+			for arena in $MAPS; do
+				found=0
+				for d in $dirs; do
+					if [ -s "$d/$arena-$seed.jsonl" ] || [ -s "$d/$arena-$seed.jsonl.gz" ]; then found=1; break; fi
+				done
+				[ $found = 1 ] || missing=1
+			done
+			[ $missing = 1 ] && out+=("$seed")
+			[ ${#out[@]} -ge "$PER_BATCH" ] && break 2
+		done
 	done
 	echo "${out[*]}"
+}
+
+class_rates() { # $1 = commit dir, $2 = short commit: the class rule over every fight of the commit, paired v the round's before
+	local before=$TREE/tools/spotter/baselines/classes-df9aacc1a.json
+	[ -f "$TREE/tools/spotter/classes.py" ] || return 0
+	# shellcheck disable=SC2046
+	python3 "$TREE/tools/spotter/classes.py" $(commit_fight_dirs "$2") --out "$1/classes" \
+		--label "commit $2, $(hostname), night shift (CPU-v-CPU showmatch ${SECONDS_PER_FIGHT} s, native)" \
+		$([ -f "$before" ] && echo --before "$before") >/dev/null 2>>"$STATE/night.log" || log "classes failed"
 }
 
 prune_disk() {
@@ -182,9 +211,9 @@ tick() {
 		prune_disk
 		day=$NIGHT/$(date +%F)
 		cdir=$day/${sha:0:9}
-		seeds=$(next_seeds "$cdir/fights")
+		seeds=$(next_seeds "${sha:0:9}")
 		if [ -z "$seeds" ]; then
-			[ -e "$cdir/.complete" ] || { log "commit ${sha:0:9}: every seed $SEED_FIRST-$SEED_LAST done today"; touch "$cdir/.complete"; }
+			[ -e "$cdir/.complete" ] || { mkdir -p "$cdir"; log "commit ${sha:0:9}: every seed $SEED_FIRST-$SEED_LAST and $SEED2_FIRST-$SEED2_LAST done"; touch "$cdir/.complete"; }
 			break
 		fi
 		run_batch "$cdir" $seeds
@@ -196,6 +225,7 @@ tick() {
 		[ $rc = 0 ] || log "batch exited $rc (see $cdir/batch.log)"
 		# Checkpoint: the fights are ranked (spotter-batch); squeeze them and rewrite the morning page.
 		find "$cdir/fights" -name '*.jsonl' -exec gzip -qf {} \; 2>/dev/null
+		class_rates "$cdir" "${sha:0:9}"
 		summary "$day" "$cdir"
 		log "batch done: seeds '$seeds' rc $rc"
 		[ $rc = 0 ] || break

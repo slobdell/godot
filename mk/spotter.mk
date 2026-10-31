@@ -87,7 +87,7 @@ spotter-night-uninstall: ## spotter S0: stop it and remove the cron line (result
 
 spotter-night-pull: ## spotter S0: NIGHT_DAY's SUMMARY.md + moments (no fights) to ~/spotter-work/night/<date>/
 	mkdir -p $(HOME)/spotter-work/night/$(NIGHT_DAY)
-	rsync -az --include='*/' --include='SUMMARY.md' --include='moments.*' --include='yields.txt' --include='run.txt' --exclude='*' \
+	rsync -az --include='*/' --include='SUMMARY.md' --include='moments.*' --include='classes.md' --include='classes.json' --include='yields.txt' --include='run.txt' --exclude='*' \
 		$(SPOT_HOST):spotter-night/$(NIGHT_DAY)/ $(HOME)/spotter-work/night/$(NIGHT_DAY)/
 	@cat $(HOME)/spotter-work/night/$(NIGHT_DAY)/SUMMARY.md 2>/dev/null | head -40
 

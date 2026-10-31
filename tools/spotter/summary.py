@@ -68,6 +68,13 @@ def main():
             good = sum(1 for c in clips if c.get("reproduced"))
             out += ["", f"Clips: {good} of {len(clips)} reproduced their moment, in `{os.path.join(cdir, 'clips')}/` "
                         "(tools/spotter/clips.py; a clip that did not reproduce is a bug, never evidence)."]
+        kpath = os.path.join(os.path.dirname(cdir), "classes", "classes.md")
+        if os.path.exists(kpath):  # round 48 S4: the class rule's rates at this commit, paired v the round's before
+            text = open(kpath).read().split("\n## By map")[0]
+            paired = open(kpath).read().split("\n## Paired")
+            out += ["", "### Class rates (tools/spotter/classes.py)", ""] + text.splitlines()[2:]
+            if len(paired) > 1:
+                out += ["", "### Paired" + paired[1].rstrip()]
         ypath = os.path.join(os.path.dirname(cdir), "yields.txt")
         if os.path.exists(ypath):
             out += ["", "Yields (it stopped for):", ""] + [f"- {l.strip()}" for l in open(ypath) if l.strip()][-10:]
