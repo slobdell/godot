@@ -2298,6 +2298,44 @@ struct Drive {
 		return mover != nullptr && (int64_t)mover->get(k.stalled_ticks) >= c.CHAIN_RELEASE_TICKS;
 	}
 
+	// Round 47 (manoeuvre M5, R47.30, `--traffic-on=holdyield`): Movement._holdyield_veto(point), line by line. Absent on a tree
+	// without the rule (no Movement.holdyield_vetoes): never vetoes, so main's yield is byte-identical.
+	bool holdyield_veto(const Vector3 &point) {
+		static const StringName vetoes("holdyield_vetoes"), his_post("_his_post"), his_post_at("_his_post_at"), team("team");
+		static const String holdyield("holdyield");
+		if (script->get(vetoes).get_type() == Variant::NIL || traffic_off(holdyield)) {
+			return false;
+		}
+		const Variant on_post = ctl->get(his_post); // Nil on a plain OrderController: `ctl as TankBrain` is null there
+		Node *tanks_root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+		if (on_post.get_type() != Variant::BOOL || !(bool)on_post || tanks_root == nullptr) {
+			return false;
+		}
+		if (flat_distance(point, (Vector3)ctl->get(his_post_at)) > 8.0) {
+			sadd(vetoes, 1);
+			return true;
+		}
+		const Vector3 at = tank->get_global_position();
+		const int64_t my_team = tank->get(team);
+		const int count = tanks_root->get_child_count();
+		for (int i = 0; i < count; i++) {
+			Node3D *enemy = Object::cast_to<Node3D>(tanks_root->get_child(i));
+			if (enemy == nullptr) {
+				continue;
+			}
+			const Variant alive = enemy->get(k.alive);
+			if (alive.get_type() != Variant::BOOL || !(bool)alive || (int64_t)enemy->get(team) == my_team ||
+					flat_distance(enemy->get_global_position(), at) > 60.0) {
+				continue;
+			}
+			if (flat_distance(point, enemy->get_global_position()) < flat_distance(at, enemy->get_global_position()) - 0.5) {
+				sadd(vetoes, 1);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// Movement._chain_far(chain, point): a spot farther from the seat than the reach (counted as skipped).
 	bool chain_far(const Vector3 &seat, double reach, const Vector3 &point) {
 		if (flat_distance(point, seat) <= reach) {
@@ -3319,6 +3357,9 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 			if (chain && chain_far(chain_seat, chain_reach, point)) {
 				continue;
 			}
+			if (holdyield_veto(point)) {
+				continue;
+			}
 			if (!free_spot(point, me, other)) {
 				continue;
 			}
@@ -3348,6 +3389,9 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 			continue;
 		}
 		if (chain && chain_far(chain_seat, chain_reach, point)) {
+			continue;
+		}
+		if (holdyield_veto(point)) {
 			continue;
 		}
 		if (!free_spot(point, me, other)) {
@@ -4315,6 +4359,15 @@ double drive_pass_lane(const DriveConfig &config, Object *mover, const String &p
 		return -9.0; // not configured: the twin fails on it, never compares a stub
 	}
 	return d.pass_lane(passer, from, direction);
+}
+
+// Round 47 (R47.30): Movement._holdyield_veto(point) natively, for its twin test (tests/test_native_holdyield.gd); -9 unconfigured.
+int64_t drive_holdyield_veto(const DriveConfig &config, Object *mover, const Vector3 &point) {
+	Drive<ObjectView> d(config, mover, ObjectView(mover));
+	if (!config.ready || !config.yield_port_ready || mover == nullptr || !d.bind()) {
+		return -9;
+	}
+	return d.holdyield_veto(point) ? 1 : 0;
 }
 
 Vector3 drive_around_fire(const DriveConfig &config, Object *mover, const Vector3 &waypoint, const Vector3 &goal,

@@ -55,7 +55,7 @@ static var native_scan := false  # Gunnery._nearest_shootable as one native call
 static var native_path := true  # Movement._next_waypoint's route-following tail as one native call (N3b move.path; its seam lands in movement.gd after CP1)
 static var native_drive := true  # Movement.drive as one native call per tank (N3c; its seam lands in movement.gd after CP1)
 static var native_situation := true  # TankBrain.build_situation's allies + contact selection + contact entries as one native call (N3d; alone under the bar, 00bb82dc; ON in the N4 group below)
-static var native_matchups := false  # TankBrain.matchups_for (70 % of decide) with Matchups' math as one native call (N3d; OFF by its price: 50 v 50 +0.2 % mean, 4a8fbf20 builder0 n = 3)
+static var native_matchups := true  # TankBrain.matchups_for (70 % of decide) with Matchups' math as one native call (N3d; OFF by its price: 50 v 50 +0.2 % mean, 4a8fbf20 builder0 n = 3). ON round 47 (R47.27): the cost-cap Crossing (gangs v syndicate 3500, ~46 crews), builder3 light, ABBA n 4: decide paired +0.07 (load-confounded) / +0.003 / -0.013 / 0.000 ms: neutral; core components in C++; test_native_matchups holds it
 static var native_decide := true  # TankBrain.decide as one native call (N3d; ruled by the laptop's windowed in-contact number)
 static var native_tq := true  # TacticalQuery.find_cover / find_cover_fire as one native call each (C24.6; alone -2.1 %, se 1.1 %, under the bar; ON in the N4 group below)
 static var native_fire := true  # Movement._around_fire (the beaten-zone check, ThreatField's reads) inside the native drive (N4; alone -1.16 %, se 0.82: not outside 2 se)
