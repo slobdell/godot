@@ -51,7 +51,6 @@ spotter-test: ## spotter: the Python tests (tests/spotter/test_*.py) and the nig
 # spotter-night-pull       today's (NIGHT_DAY=) SUMMARY.md and moments to ~/spotter-work/night/<date>/ on this machine
 SPOT_HOST ?= devia@builder3
 NIGHT_DAY ?= $(shell date +%F)
-SPOT_CRON := */5 * * * * $$HOME/spotter-night/bin/night.sh tick >> $$HOME/spotter-night/state/cron.log 2>&1 \# spotter-night
 
 .PHONY: spotter-night-install spotter-night-push spotter-night-status spotter-night-stop spotter-night-start spotter-night-uninstall spotter-night-pull
 spotter-night-install: ## spotter S0: install the night shift on SPOT_HOST (kit, runner, bare repo, cron every 5 min)
@@ -63,7 +62,7 @@ spotter-night-install: ## spotter S0: install the night shift on SPOT_HOST (kit,
 	kit=$$(git rev-parse --short HEAD)$$(git diff --quiet HEAD -- tools/spotter tests/spotter mk/spotter.mk || echo -dirty); \
 		ssh -o BatchMode=yes $(SPOT_HOST) "echo $$kit > ~/spotter-night/kit/.kit-commit; chmod +x ~/spotter-night/bin/night.sh; \
 		[ -d ~/spotter-night/repo.git ] || git clone -q --bare https://github.com/slobdell/godot.git ~/spotter-night/repo.git; \
-		(crontab -l 2>/dev/null | grep -v '# spotter-night'; echo '$(SPOT_CRON)') | crontab - && crontab -l | grep spotter-night"
+		~/spotter-night/bin/night.sh cron-install"
 	@echo ">> spotter-night: installed on $(SPOT_HOST) (kit $$(git rev-parse --short HEAD)); name its commit: make spotter-night-push SHA=<green hash>"
 
 spotter-night-push: ## spotter S0: SHA=<green hash> becomes the commit the night shift runs (refs/heads/green on SPOT_HOST)
@@ -81,7 +80,7 @@ spotter-night-start: ## spotter S0: clear a stop
 	@ssh -o BatchMode=yes $(SPOT_HOST) '~/spotter-night/bin/night.sh start'
 
 spotter-night-uninstall: ## spotter S0: stop it and remove the cron line (results stay in ~/spotter-night; rm -rf it to free the disk)
-	ssh -o BatchMode=yes $(SPOT_HOST) '~/spotter-night/bin/night.sh stop; crontab -l 2>/dev/null | grep -v "# spotter-night" | crontab -; crontab -l 2>/dev/null | grep -c spotter-night || true'
+	ssh -o BatchMode=yes $(SPOT_HOST) '~/spotter-night/bin/night.sh stop; ~/spotter-night/bin/night.sh cron-remove'
 
 spotter-night-pull: ## spotter S0: NIGHT_DAY's SUMMARY.md + moments (no fights) to ~/spotter-work/night/<date>/
 	mkdir -p $(HOME)/spotter-work/night/$(NIGHT_DAY)

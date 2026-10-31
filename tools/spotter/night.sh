@@ -214,7 +214,7 @@ status() {
 	echo "  tree: $(cat "$TREE/.spotter-commit" 2>/dev/null || echo none)   green ref: $(git --git-dir="$REPO" rev-parse -q --short refs/heads/green 2>/dev/null || echo none)"
 	echo "  disk: $(du -sh "$NIGHT" 2>/dev/null | cut -f1) of cap ${CAP_GB}G; $(df -h ~ | tail -1 | awk '{print $4}') free on /"
 	echo "  last log lines:"
-	tail -8 "$STATE/night.log" 2>/dev/null | sed 's/^/    /'
+	tail -8 "$STATE/night.log" 2>/dev/null | sed 's/^/    /' || true
 }
 
 stop() {
@@ -236,5 +236,9 @@ status) status ;;
 stop) stop ;;
 start) rm -f "$STATE/STOP"; log "start: STOP cleared"; echo "STOP cleared: the next idle tick runs" ;;
 busy) busy_reason ;;
-*) echo "night.sh tick | status | stop | start | busy" >&2; exit 2 ;;
+cron-install) # every 5 min, from this script's installed path (the line is marked so cron-remove finds only ours)
+	line="*/5 * * * * $NIGHT/bin/night.sh tick >> $STATE/cron.log 2>&1 # spotter-night"
+	{ crontab -l 2>/dev/null | grep -v '# spotter-night'; echo "$line"; } | crontab - && crontab -l | grep '# spotter-night' ;;
+cron-remove) { crontab -l 2>/dev/null | grep -v '# spotter-night' || true; } | crontab - && echo "cron line removed" ;;
+*) echo "night.sh tick | status | stop | start | busy | cron-install | cron-remove" >&2; exit 2 ;;
 esac
