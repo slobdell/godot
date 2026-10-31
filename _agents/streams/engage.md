@@ -37,6 +37,12 @@ Memory: smart AI on both sides; units must look smart and under his control.
    inside its own weapon range for > 2 s that did not fire (the match-wide count is the class).
 2. **E2 the fix, ON, smallest change (C47.2):** whatever E1 names. A crew with a target inside its range and a clear line fires within
    ~1 s. Symmetric (C47.9). Tests first: Guns_3's geometry staged.
+2b. **E7 his direct order beats RETREAT (R47.6, orchestrator 2026-10-30 ~17:40; ahead of E3).** Route's R1 trace (Locks, builder3,
+   staged from his census at tick 1170): Hunters_4's drive north and 230 m detour were TankBrain RETREAT (hull 15/220 under
+   CRITICAL_HP, threats visible: RETREAT 0.99 beats his attack; `withdraw_point` keeps handing it a move_to ~20 m from the threats,
+   north, away from his target), not the route (<= 1.036x shortest). Ruling: his direct order to a crew beats RETREAT, ON, `=off`
+   escape; a hurt crew pressing on may say so through one additive feed line kind (C47.5); the CPU only for orders its commander
+   gives as direct (C47.9). Bar on 12601-12648 or the reserve, filed before numbers.
 3. **E3 pot shots (his second question) as a design read, not a default:** what a crew does when it has a target in range but a poor
    fix (moving, partly hidden): today's rule, and a proposal ("fire at reduced accuracy after N s held") with what he'd see. Build it
    behind a switch only if E1 shows held-fix time is a real share of the silence; the default flip is his call (orchestrator asks).
