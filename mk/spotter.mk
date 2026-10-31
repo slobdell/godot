@@ -96,7 +96,7 @@ SPOT_CLIPS ?= 30
 .PHONY: spotter-clips spotter-clip
 SPOT_RANKS ?=
 spotter-clips: native-fresh import ## spotter S3: the top SPOT_CLIPS moments of SPOT_DIR (or SPOT_RANKS=31-100 + the controls) as clips -> SPOT_DIR/clips/*.mp4 + clips.json (one Godot at a time; LIGHT=1 is fine)
-	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --top $(SPOT_CLIPS) --godot $(GODOT) $(if $(SPOT_RANKS),--ranks $(SPOT_RANKS))
+	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --top $(SPOT_CLIPS) --godot $(GODOT) $(if $(SPOT_RANKS),--ranks $(SPOT_RANKS)) $(if $(SPOT_BLIND),--blind)
 
 spotter-clip: native-fresh import ## spotter S3: one clip from a moment's reproduction line (SPOT_SEED SPOT_ARENA SPOT_CREW SPOT_FROM SPOT_TO) -> SPOT_DIR/clips/
 	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --godot $(GODOT) --one $(SPOT_SEED) $(SPOT_ARENA) "$(SPOT_CREW)" $(SPOT_FROM) $(SPOT_TO)

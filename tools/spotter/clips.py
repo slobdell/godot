@@ -46,7 +46,12 @@ def start_xvfb(xvfb):
     sys.exit("clips: no Xvfb display could start")
 
 
+BLIND = False  # --blind: the caption names the crew only (a batch with hidden controls; batch 2's reasons were burned in)
+
+
 def caption(m):
+    if BLIND:
+        return f"{m['crew']} ({m.get('unit', '')})  {m['arena']}"
     words = "; ".join(f"{r['words']} {r['value']:g} {r['unit']}" for r in m["reasons"][:2])
     return f"{m['crew']} ({m['unit']})  {m['arena']} seed {m['seed']}  t={m['start_s']}-{m['end_s']} s  |  {words}"
 
@@ -116,10 +121,13 @@ def main():
     ap.add_argument("--godot", default="")
     ap.add_argument("--timeout", type=int, default=900)
     ap.add_argument("--only", type=int, default=0, help="render just this rank (1-based)")
+    ap.add_argument("--blind", action="store_true", help="caption the crew only (no reasons in the frames)")
     ap.add_argument("--ranks", default="", help="render ranks A-B (1-based) instead of the top N, plus moments.json's controls")
     ap.add_argument("--one", nargs=5, metavar=("SEED", "ARENA", "CREW", "FROM_S", "TO_S"),
                     help="one clip from its reproduction line (no moments.json, no drift check)")
     args = ap.parse_args()
+    global BLIND
+    BLIND = args.blind
     if args.one:
         seed, arena, crew, from_s, to_s = args.one
         one = {"seed": int(seed), "arena": arena, "crew": crew, "unit": "", "start_s": int(from_s), "end_s": int(to_s),
