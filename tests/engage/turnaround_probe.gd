@@ -151,6 +151,11 @@ func _run() -> void:
 			print("ENGAGE_TA_STAGE %s" % JSON.stringify({"element": label, "team": team, "members": names, "task": held, "error": err}))
 		else:
 			print("ENGAGE_TA_STAGE %s" % JSON.stringify({"element": label, "team": team, "members": names, "task": held, "skipped": true}))
+	if crew_name == "auto":
+		# Round 47 (engage E1): the first living green crew placed (a window staged only for its GUN_TRACE lines).
+		var greens: Array = placed.keys().filter(func(n: String) -> bool: return n.begins_with("Green_"))
+		greens.sort()
+		crew_name = String(greens[0]) if not greens.is_empty() else ""
 	var crew := lab.tank_of(crew_name)
 	if crew == null:
 		print("ENGAGE_TA_DONE {\"error\": \"no crew %s at tick %d\"}" % [crew_name, stage_tick])
