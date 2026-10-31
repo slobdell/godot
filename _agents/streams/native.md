@@ -84,21 +84,31 @@ not wall time, not native: the lab is deterministic per PROCESS HISTORY, and thi
 - **R47.47: the test is PENDING** (YIELD_CYCLE=on runs it; it prints the reason otherwise): it guards the watchdog, OFF in his
   game, and a shard-order red would gate every stream's check. The assertion is unchanged.
 
-**FINAL REPORT (DRAFT, 2026-10-30 ~23:00 PDT; final once e5fa1f1be's check is named). On main: 6f19722ae (GREEN, 3523 / 0,
-29 ALL JUDGED, sim-baseline unmoved) and 27ea82fa5 (merged as 8d37b9796 with route_doors.gd's stub-order fix 94646bf63). Candidate:
-e5fa1f1be (full check queued, builder3): + test_match_shell_dropped_peer's flake fix, E3's pot_shot_halts line (02f308371, a no-op
-until engage's GDScript), test_native_gun's E3 floor, lines_r47 (25 lines: Bars K, E7, M), main 8d37b9796.**
-In his terms: his game plays the same bit for bit, with three more of its core pieces in C++ (formation seats, the squad's view
-of its crews and contacts, the matchups); every rule the other streams shipped ON this round that touches the brain, the gun or the
-drive runs the same in C++ (E7 his attack beats RETREAT, E3 snap shots, holdyield); blast doors and sight screens work on the C++
-path too; his own garage fights can be replayed again, and his replays know which rules his build ran.
-**Backlog:** N1 DONE as filed (E7 + Amendment 1, E3 + its halting guard, holdyield, E2a dropped by R47.17, Bar M none);
-N2 DONE (place ON); N3 DONE (reader; the Sumps re-read waits on a recording with inp rows); N4 DONE (esit ON); N5 lines_r47 up to
-date with every round-47 verdict filed; N6 DONE (seed, .remote-synced, Xorg DISPLAY, the queue watched).
-Plus: N0 (R47.8) cause 1 fixed, the limit stated (R47.16); C47.8 doors and R47.36 the eye mask in C++; R47.27 (a) matchups ON / scan
-OFF, (b) parked with a next-round note; R47.31 / 34 the fog split, dropped; the measured laptop ratio ~3.0x builder3.
-**Next round:** contact_prototypes in C++; R47.18 the layout's bake timing; cause 2 of the replay parting with inp rows; E9's twin
-(engage's fire-lane pre-check): none needed (R47 E9 refuted).
+**FINAL REPORT (2026-10-31 ~04:30 PDT). Last green: 86d8ee035 — builder3 `make native check exited 0`, 3622 / 0, 29 targets ALL
+JUDGED, sim-baseline unmoved on all 13 maps (main 8d51777cc merged). Earlier greens, all merged: dfb6a2567, 6f19722ae, 27ea82fa5
+(as 8d37b9796), e5fa1f1be, 155a8fc0e (3617 / 0). To merge: 86d8ee035 (the commits after e5fa1f1be: native-repeat, the yield-cycle
+test PENDING (R47.47), the replay stamp's six round-47 rules, E9 dropped, Status).**
+In his terms: his game plays the same bit for bit, with three more core pieces in C++ (formation seats, the squad's view of its
+crews and contacts, the matchups). Every rule shipped ON this round that touches the brain, the gun or the drive runs the same in
+C++ (E7 his attack beats RETREAT, E3 snap shots + the short-halt hold, holdyield). Blast doors and sight screens work on the C++ path
+too. His own garage fights replay again, and his replays know every rule his build ran (his round-46 Crossing is exact to ~12 s
+again, not 2-3 s).
+**Backlog:** N1 DONE (E7 + Amendment 1, E3 + pot_shot_holds, holdyield; E2a dropped by R47.17; E9 refuted by engage's trace, twin
+dropped); N2 DONE (place ON); N3 DONE (inp reader); N4 DONE (esit ON); N5 DONE (lines_r47, 25 lines; nothing filed since);
+N6 DONE (seed, .remote-synced, Xorg DISPLAY, the queue watched). Plus N0 (R47.8) cause 1 fixed, the limit stated (R47.16);
+C47.8 doors and R47.36 the eye mask in C++; R47.27 matchups ON / scan OFF; R47.31 / 34 dropped; the yield-cycle flake read
+(R47.47); the replay stamp (lesson 354).
+**Round 48's native list:** (1) contact_prototypes' rebuild in C++ (~0.7 ms a frame on his laptop at the cost cap); (2) the
+same-process physics carry-over: Jolt state left by earlier matches in one process moves a lab by cm (the sliver test is PENDING
+on it; `make native-repeat ... REPEAT_JITTER=on YIELD_CYCLE=on` is the bar's tool; matters for rematches and netplay); (3) the
+laptop fog readers' unexplained ~2 ms (references/round47/native/fogread-laptop); (4) the army layout's bake timing (R47.18:
+ARMY_LAYOUT_UNCHECKED, standable queries before the navmesh); and cause 2 of the replay parting (~11 s) once recordings carry inp rows.
+**Questions for the lead:** none open.
+**Known issues:** the yield-cycle test is PENDING (R47.47: ~95 % of 1 cm jittered starts leave the sliver); replays part at ~11 s.
+**Requests to other streams:** ship every ON sim rule with its MatchRecorder.rules() + tests/replay/rules.py entry in the same
+merge (lesson 354; engage's `--halt-cancel=old` is next). Change ElementSituation.build's loops, TacticsFormation.place, Lay /
+_obey / the pot shot / _holdyield_veto only through native (each is twin-frozen).
+**What to playtest:** nothing new on screen from native. `make playtest-report RECORDING=<his>.jsonl`; `make replay-match ...`.
 
 **REPORT (2026-10-30 ~22:00 PDT) — the round so far, in one place.**
 **Green / merge:** 6f19722ae GREEN builder3 (`make check exited 0`, 3523 / 0, 29 ALL JUDGED, sim-baseline unmoved on all 13 maps;
