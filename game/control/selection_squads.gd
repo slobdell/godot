@@ -97,6 +97,22 @@ static func split(units: Array, groups: ControlGroups, elements: Elements, alive
 			for member in members:
 				taken[member] = true
 			squads.append({"number": int(entry[1]), "units": members, "element": _element_exactly(elements, members, alive)})
+	# R47.4 (GROUP_MERGED): a group wholly selected but partly taken by a smaller one keeps its untaken remainder as a squad of its
+	# number (his group 4 = Spears + Wrenches with group 3 = Spears: the Wrenches were loose).
+	if groups != null and GROUP_MERGED:
+		for number in groups.numbers():
+			var members := _living(groups.members(number), alive)
+			if members.is_empty() or not members.all(func(n: String) -> bool: return living.has(n)):
+				continue
+			var rest: Array[String] = []
+			for member in members:
+				if not taken.has(member):
+					rest.append(member)
+			if rest.is_empty() or rest.size() == members.size() or rest.size() > Formations.MAX_MEMBERS:
+				continue
+			for member in rest:
+				taken[member] = true
+			squads.append({"number": number, "units": rest, "element": _element_exactly(elements, rest, alive)})
 	if elements != null:
 		for unit_name in living:
 			if taken.has(unit_name):
@@ -2171,6 +2187,74 @@ static var veto_lined := 0
 const VETO_SNAP_M := 12.0
 ## The points the veto tries along a squad's line to his click when the body has no seat for it.
 const VETO_LINE_STEPS := 10
+
+
+## Round 47 (orders O1, R47.4): HIS MERGED GROUP lays as ONE body at his click. He saved two squads under one control-group number
+## ("I selected squads 3 and 4, grouped them into a single squad 4, then I picked a single target waypoint") and one click
+## laid them as two squads ABREAST, each its halt footprint wide plus GAP_M apart: Crossing 61 m (two gang coils), Locks 36 m
+## (two herringbones). Two halts of five that do not overlap cannot stand much nearer than one halt's width, so the merged
+## group's squads halt as FILES side by side across his click, one squad's pitch apart, every file's head on the click line
+## and its crews behind it toward where they came from: ten vehicles in one double file (a herringbone of ten), the squads'
+## spots a pitch apart. Only the merged group's plain move / attack-move (no drawn facing, not a shifted leg) and only when every
+## seat of every file is dry, standable and passes the veto; any other click is byte-identical. And (`split`) a group partly
+## taken by a smaller group in the same selection keeps its remainder as a squad of its number (Crossing: the Wrenches were
+## ordered loose, without a squad, because his group 4 also held the Spears' group 3). OFF (merged_default); `--group-merged=on`. Symmetric (C47.9): the CPU orders its elements one at a time (C45.5) and has no group click to merge.
+static var GROUP_MERGED := merged_default()
+## `--group-merged=all` (OFF; Bar O's READ arm, amendment 1): every plain click on 2-3 whole squads lays as the double file, merged
+## or not (his Locks click may have been two squads he box-selected; no key rows said).
+static var GROUP_MERGED_ALL := OS.get_cmdline_user_args().has("--group-merged=all")
+## At most this many files abreast (a merged group of up to fifteen); a bigger merge lays as today.
+const MERGED_FILES_MAX := 3
+## Measurements (a probe reads them): merged clicks laid as files; merged clicks whose files the ground refused (today's lay).
+static var merged_laid := 0
+static var merged_refused := 0
+static var merged_stepped := 0  # O1 v2: laid after stepping back from the click
+## O1 v2: how far the double file may step back along his approach to find dry, standable seats.
+const MERGED_BACK_STEP_M := 4.0
+const MERGED_BACK_STEPS := 10
+
+
+## OFF since Bar O's first series failed D1 (R47.4; the files bumped 5-20x where laid, Status): `--group-merged=on` /
+## `GROUP_MERGED=on` opts in; `--group-merged=all` lays every 2-3 squad click so.
+static func merged_default() -> bool:
+	return OS.get_cmdline_user_args().has("--group-merged=on") or OS.get_cmdline_user_args().has("--group-merged=all") \
+			or OS.get_environment("GROUP_MERGED") == "on"
+
+
+## The files' heads: one per block, side by side across `heading` through the click, `gap` apart, left to right in the order the
+## blocks stand across the heading now (nobody crosses another's file on the way in). Pure.
+static func merged_heads(blocks: Array, click: Vector3, heading: Vector3, gap: float) -> Array[Vector3]:
+	var ahead := Vector3(heading.x, 0.0, heading.z).normalized()
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var order: Array = []
+	for i in blocks.size():
+		order.append([(Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z) - flat_click).dot(across), i])
+	order.sort()
+	var heads: Array[Vector3] = []
+	heads.resize(blocks.size())
+	for k in order.size():
+		heads[int(order[k][1])] = flat_click + across * ((float(k) - (order.size() - 1) * 0.5) * gap)
+	return heads
+
+
+## The seats of a file of `count` headed at `head` along `heading` (TacticsFormation's column: the lead on the head, each crew
+## `pitch` behind the one before). Pure.
+static func merged_file_seats(head: Vector3, heading: Vector3, count: int, pitch: float) -> Array[Vector3]:
+	var ahead := Vector3(heading.x, 0.0, heading.z).normalized()
+	var seats: Array[Vector3] = []
+	for i in maxi(count, 1):
+		seats.append(Vector3(head.x, 0.0, head.z) - ahead * (i * pitch))
+	return seats
+
+
+## The pitch a merged lay uses: the widest across and the longest along of the blocks' own pitches (SPACING_M without one).
+static func merged_pitch(blocks: Array) -> Vector2:
+	var pitch := Vector2.ZERO
+	for block: Dictionary in blocks:
+		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
+		pitch = Vector2(maxf(pitch.x, p.x), maxf(pitch.y, p.y))
+	return pitch
 
 
 static func veto_default() -> bool:

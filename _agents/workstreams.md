@@ -399,6 +399,40 @@ _(filed here BEFORE any number; newest first)_
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
 
+### Bar O (orders O2, R47.4; filed 2026-10-30 ~17:05 PDT, before any number on its seeds)
+
+**The change:** `--group-merged` (ON; `=off` is round 46's lay): his MERGED group (the selection is exactly one control group of
+more vehicles than a squad holds, 2-3 squads, a plain move / attack-move, no drawn facing, not a shifted leg) halts as files side
+by side across his click, one pitch apart, heads on the click line (`halt_at` / `halt_shape` "column" / `lay` on each task); any
+wet, deck, unstandable or vetoed seat keeps today's places; `split` keeps a partly-taken group's remainder as a squad. No drive,
+brain-scoring or route-cost code moves (the halt shape key and its deploy are round 35's), so no twin is owed (C47.6).
+**Runner:** `tests/control/orders_o_bar.sh "12701..12712" "12713..12724" "12725..12730" <dir>` (builder3, `native orders-probe`,
+`--probe-merge=on` saves every probe squad under one more group number); **judge** `tests/control/orders_o_judge.py <dir> off on`
+(`--self-test`: each deciding line fails on a staged case, lesson 350). Arms paired by (map, squads, route, seed).
+**Parts:** merged = locks / crossing / terminus / yard_open / sumps x 2 / 3 squads x click x 12 seeds x 2 arms (240 runs); his_x /
+his_l = his Crossing (80.9, 49.5) and Locks (-81.6, 45.7) clicks, 2 squads x 12 seeds x 2 arms (READ only); identity = locks /
+crossing / terminus x 2 / 3 squads x click / route x 6 seeds, NOT merged, `--group-merged=off` v ON (144 runs).
+**Deciding (what he asked FOR, lesson 352):**
+- D1 the spread between the squads' spots for one merged click: median ON <= 0.6 x median OFF.
+- D1b of the clicks the files were laid on, >= 90 % have a spread <= 25 m.
+- D2 all-in sooner or same: paired mean (ON - OFF) <= +0.5 s over pairs where both arrive (a tie is not a loss, lesson 344).
+- D2b never all in: ON <= OFF.
+**Guards (what it could break):** G1 friendly contacts a run ON <= OFF x 1.25 + 5 (two files a pitch apart may brush); G2 wedged
+crew-s a run ON <= OFF x 1.25 + 5; G3 the V1 veto's lines (places across a gap / sent back, squads over a deck) ON <= OFF; G4 every
+unmerged click byte-identical (0 places differ; streets and his V1 clicks by construction); G5 the farthest spot from his click
+median ON <= OFF. **Ships ON** when every line passes; a FAIL goes to him in player terms the same hour (C47.2).
+**Amendment 1 (2026-10-30 ~17:25 PDT, before any number; native's N0 relay):** his Crossing clicks were the ctrl+4 merge (the
+Wrenches went as loose crews), but whether his Locks click was a merge cannot be told (no key rows then). Added part `all`, a READ
+and not a line: `--group-merged=all` (OFF by default) lays the double file on every 2-3 squad plain click, on the merged part's
+corpus unmerged (240 runs), reported with D1 / D2 / G1 / G2's numbers. Widening O1 to it is his call in player terms; the verdict
+above is unchanged.
+**Amendment 2 (2026-10-30 ~17:35 PDT, before any number; R47.15, the orchestrator):** part `all` is DECIDING, not a read: his ask
+is one click puts his squads together however he selected them. `--group-merged=all` ships ON if it passes D1, D1b, D2, D2b, G1,
+G2, G3 and G5 on its own corpus (G4 cannot apply: it changes unmerged clicks by design; Terminus's streets are in its corpus);
+plus part `his_l_all` (his Locks click as a box-select, 2 squads x 12 seeds, READ beside D1). Judge: `orders_o_judge.py --all <dir>
+off all`. If it fails only on all-in, the player-terms note ("together, but the last squad in N s later") goes to the orchestrator
+the same hour. The merged arm's verdict stands on its own.
+
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
 **Goal: what he saw on his last two playtests changes in his default game.** The camera keeps his selection and its fight on screen
