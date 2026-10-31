@@ -90,67 +90,84 @@ S4's labels.
 
 ## Status
 
-_(updated 2026-10-31 ~04:20 PDT by the spotter worker; every number names its commit, machine, workload and n)_
+## FINAL REPORT (2026-10-31 ~04:50 PDT, the spotter worker; session ending, the night shift keeps running)
 
-### Report (top)
-- **Branch tip GREEN: a414cdba1** (builder3, `make check exited 0`, 3608 passed / 0 failed, 29 targets ALL JUDGED, 2026-10-31 ~04:20;
-  covers the LOS / follow probe fixes, batch 2 tooling, the batch 2 page, the classes doc). Merge here.
-- **Merged to main** by the orchestrator: stream/spotter 213f5d070 (check GREEN at **9858da23f**: builder3, `make check exited 0`,
-  3608 passed / 0 failed, 29 targets ALL JUDGED). Later commits on the branch are spotter paths only (Python, the probe, the pages,
-  docs). The newest probe change (LOS + follow goal, tests/spotter/feature_probe.gd) has run in batch 2's 24 fights with no engine
-  errors but no full check; the last full check on this branch is 9858da23f.
-- **His gate S4: batch 1 judged, 30 of 30 "looks dumb"** (no notes; his words via the orchestrator: "all cases it exposed looked
-  like dumb behavior"). Precision of the top 30 = 1.00 (n = 30, no negatives).
-- **S5 done for batch 1:** `_agents/streams/references/round47/spotter/batch1-classes.md` (5 cause classes, every crew with
-  seconds, peak tick, per-second context, clip, reproduction line). Routed by the orchestrator (R47.48): A RETREAT abandoning the
-  squad and E outranged / no answer -> engage (E10); D -> orders; B give-way loops and C stuck on terrain / no_path -> round 48's
-  manoeuvre. Class D's FOLLOW rows were a probe artifact (orders reproduced it; amended in the doc).
-- **Batch 2 is UP for him (04:15):** main **2fc962aa6**, builder3 (`night.sh batch-now`, nice 19), 24 fresh fights (6 maps x seeds
-  13121-13124, 240 s), 113,636 crew-seconds, 4,002 moments; the page shows **ranks 31-100 + 10 hidden random controls** (ordinary
-  windows the ranker did not flag), shuffled, reasons hidden until he taps: https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9
-  80/80 clips reproduced their moment (drift <= 0.07 m), re-ranked with the follow fix before upload. The clips' burned-in caption
-  carried the reasons (it would have given the controls away): batch 2's clips got a black caption band (ffmpeg, NVENC); future
-  blind batches use `clips --blind` / `SPOT_BLIND=1`. It answers where precision drops and the base rate.
-- **S6 waits for negatives:** 30 positives train nothing. Floor: ~100 "fine" and ~100 "dumb" for an 18-feature model's held-out
-  AUC to mean anything; 300+ to trust it per class. `tools/spotter/learn.py` is ready (stdlib logistic regression, K-fold by seed,
-  v the hand score); a GPU buys nothing at this size (frame models only if it plateaus).
-- **S0 night shift:** installed on builder3, cron every 5 min, green ref pushed by the orchestrator after each green main (now
-  2fc962aa6). It has NOT yet run a batch unattended: the box was never idle 10 min tonight (back-to-back checks). Its pieces are
-  proven separately: the yield / lock / STOP frame (test_night.sh 15/0), the tree checkout of a named commit with the kit laid over
-  it, batches, ranking, clips, SUMMARY.md (batch-now, the same code path minus the idle gate and the yield).
+**Merged:** main has stream/spotter 93477ba80 (= **a414cdba1 GREEN**: builder3, `make check exited 0`, 3608 passed / 0 failed, 29 targets
+ALL JUDGED; earlier 9858da23f GREEN, same numbers). Spotter paths only + one Makefile line (`LIGHT_GOALS += spotter-night-% spotter-test
+spotter-rank`, R47.46).
 
-### Probe bugs found and fixed (each found by reading a judged batch)
-1. `near_enemy` read `OrderController.visible_enemy_names`, filled only for halt_on_contact reflexes: -1 in every batch 1 row, so
-   "enemy in sight and in range, not firing" never fired (engage's hold-fire class was invisible). Now the probe's own pure LOS ray
-   (Perception.has_line_of_sight, sight radius). Batch 2: enemy in sight in 44,687 of 113,636 crew-seconds; hold-fire 9,403.
-2. A follow's `brain.order.goal` is never updated (the drive follows the live station): "goal getting farther" was false for
-   follows. Now the mover's live goal; older follow rows carry no goal (features.py).
-3. Clip frame 0 showed the showmatch's own camera for one frame: 4 unsaved warm-up ticks.
+### What exists (all dev tooling; nothing ships in the game)
+| Piece | Where | What it does |
+|---|---|---|
+| S1 feature probe | `tests/spotter/feature_probe.gd`, `tools/spotter/features.py` | one row per live crew per second of a CPU-v-CPU showmatch fight (read-only); 11 signals in words with run lengths and floors |
+| S2 ranker | `tools/spotter/rank.py` | per-unit-class empirical tail (non-parametric robust z), moments, 8 a fight / 1 a crew, readable reasons, reproduction lines, `--controls N` |
+| S3 clips | `tests/spotter/clip_probe.gd`, `tools/spotter/clips.py` | offscreen on builder3 (Xvfb extracted without root to `~/tools/xvfb`; Mesa llvmpipe = his gl_compatibility renderer; never his desktop :1), NVENC encode, follow camera + marker, **drift check at the peak tick** (a clip that does not reproduce is marked, never shown), `--ranks`, `--blind`, `--one` |
+| S4 pages | `references/spotter/judge/` (batch 1), `judge2/` (batch 2); `tools/spotter/judge_docs.py` | tap-to-judge (looks dumb / fine / can't tell + note); db `clips` (write admin) + `labels` (his taps); videos as page assets |
+| S5 | `tools/spotter/labels.py`, `_agents/streams/references/round47/spotter/batch1-classes.md` | precision, signals dumb v fine, findings with repro lines; the classes write-up |
+| S6 | `tools/spotter/learn.py` (+ test) | stdlib logistic regression v the hand score, K-fold by seed (AUC, precision at 10 / 30 %); waits for labels |
+| S0 night shift | `tools/spotter/night.sh` on builder3 + `mk/spotter.mk` | below |
+| Stretch | `tools/spotter/recording.py`; `references/spotter/param_search_proposal.md` | ranks HIS recordings from their own census (his Locks Hunters_4 detour came out #3 of his side unprompted); the offline parameter-search proposal |
+Make targets: `spotter-fights`, `spotter-rank`, `spotter-batch`, `spotter-clips`, `spotter-clip`, `spotter-test` (Python + test_night.sh), `spotter-night-*`.
 
-### Done (the pieces)
-- **S1** `tests/spotter/feature_probe.gd` (one row per crew-second, read-only) + `tools/spotter/features.py` (11 signals with words,
-  run lengths, floors). **S2** `tools/spotter/rank.py` (per-class empirical tail, moments, caps, reasons, reproduction lines,
-  `--controls N`). **S3** `tests/spotter/clip_probe.gd` + `tools/spotter/clips.py`: offscreen Xvfb extracted without root to
-  builder3 `~/tools/xvfb` (his desktop :1 never used), Mesa llvmpipe = his gl_compatibility renderer, NVENC encode, near-top-down
-  follow camera, marker + caption, **drift check** at the peak tick: batch 1 30/30 within 0.02-0.07 m; 10 s cap; `--ranks A-B`.
-  **S4** pages `references/spotter/judge/index.html` (batch 1) and `judge2/` (batch 2), db `clips` (write admin; checked) +
-  `labels`, videos as page assets; `tools/spotter/judge_docs.py` builds the clip docs. **S5** `tools/spotter/labels.py` + the
-  classes doc. **S6** `tools/spotter/learn.py` (+ test). **S0** `tools/spotter/night.sh` + `mk/spotter.mk` targets.
-- **Stretch:** `tools/spotter/recording.py` ranks HIS recordings from their own census (his Locks Hunters_4 detour came out #3 of
-  his side unprompted); `references/spotter/param_search_proposal.md` (proposal only: constants, the knob-registry prerequisite,
-  objective, guards; after labels).
+### The night shift (S0): how to check it, stop it, where the morning page lands
+- **Runs by itself:** builder3 cron every 5 min (`crontab -l`, line marked `# spotter-night`). It starts only after the box has been idle
+  10 min (nobody holds `~/tank_squad/.full-check.lock`, no process of anyone else's in a `~/tank_squad/<folder>`), runs nice 19 / ionice
+  idle, never takes a slot or the lock, and **yields within ~15 s** when anything else starts (kills its own process group; a finished
+  fight is a checkpoint). Each batch: 6 maps x 2 seeds of 13121-13216 (240 s fights), rank, top 30 clips. Game = the green ref the
+  orchestrator pushes after each green main (`make spotter-night-push SHA=`; now 2adbd3ac8), checked out clean with the kit laid over it.
+- **Check:** `make spotter-night-status` (what it's doing, what holds the box, last log lines, disk).
+  **Stop:** `make spotter-night-stop` (`-start` resumes); **remove:** `make spotter-night-uninstall` (data stays; cap 20 GB, oldest days go
+  first; builder3 had 149 GB free).
+- **Morning page:** builder3 `~/spotter-night/<date>/SUMMARY.md` (top 20 moments, clips count, yields, the night's log); details in
+  `~/spotter-night/<date>/<commit>/fights/` (moments.md, clips/). `make spotter-night-pull` copies SUMMARY + moments to the laptop
+  (`~/spotter-work/night/<date>/`).
+- **Verified:** test_night.sh 15/0 on the laptop AND on builder3 (idle runs, yield in 6 s at a 1 s poll with the batch group killed, busy
+  never starts, idle wait, lock = busy, STOP); cron's bare environment has every tool; cron has ticked since 23:55 with an empty error
+  log, recording each busy reason. The batch body itself (tree checkout of a named commit + kit, fights, rank, clips, SUMMARY) ran twice
+  through `night.sh batch-now` (same code minus the idle gate). **Not yet seen: an unattended batch** — the box was never idle 10 min
+  tonight (checks back to back). First thing to look at next session: `make spotter-night-status` / its night.log `batch:` lines.
 
-### How to stop / remove the night shift
-`make spotter-night-stop` / `-start` / `-status` / `-uninstall` (data stays in builder3 `~/spotter-night`; cap 20 GB).
+### Results
+- **Batch 1** (1209a934f + spotter, builder3, 12 fights = 6 maps x 13215-13216, 52,487 crew-seconds, 1,557 moments): top 30 as clips,
+  30/30 reproduced (0.02-0.07 m). **His verdict: 30 of 30 "looks dumb"** (no notes; "all cases it exposed looked like dumb behavior").
+  **Five cause classes** (`batch1-classes.md`; routed R47.48): A hurt crews RETREAT by abandoning the squad, often reversing 8-19 s (4,
+  engage); B squadmates jam each other in give-way loops, HOLD crews leave posts to give way (9, manoeuvre r48); C stuck on terrain /
+  no_path and never giving up, one sat a whole match (5, manoeuvre + route r48); D drives away from its goal (7, orders; the FOLLOW
+  rows were a probe artifact, amended: the real fault is the follower reversing / spinning when its leader pivots); E shot from beyond
+  its range with no answer (5, engage E10).
+- **Batch 2** (main 2fc962aa6, builder3, 24 fights = 6 maps x 13121-13124, 113,636 crew-seconds, 4,002 moments): **ranks 31-100 + 10
+  hidden random controls**, shuffled, reasons hidden until he taps, captions blacked out; 80/80 reproduced (<= 0.07 m).
+  Page: https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9 (batch 1: https://claude.ai/artifact/DXKpD67u2r49HQrk93ozJD).
+- **From batch 2's taps, compute** (export the page's `clips` + `labels` with ArtifactData, then `tools/spotter/labels.py`):
+  precision by rank band (31-50, 51-75, 76-100: where it drops), the controls' "dumb" rate (the base rate: if ordinary seconds also
+  look dumb, the ranker is not what finds them), precision per signal (drop or down-weight signals he calls fine), and classes for any
+  new cause (same format as batch1-classes.md).
+- **Probe bugs found by reading judged batches, fixed:** enemy-in-sight was always -1 (read a reflex-only list; now its own LOS ray:
+  batch 2 sees an enemy in 39 % of crew-seconds, hold-fire 9,403 crew-seconds); a follow's goal was frozen (now the mover's live goal);
+  clip frame 0 showed the showmatch camera.
+
+### S6: the label floor
+30 positives and no negatives train nothing. **~100 "fine" and ~100 "dumb"** is the floor for the 18-feature model's held-out AUC to mean
+anything; 300+ to trust it per class. Getting "fine" labels needs lower ranks and controls (batch 2 is the first). A GPU buys nothing
+at this size; a frame model only if the feature model plateaus.
+
+### Round 48 (for the next orchestrator)
+1. Read batch 2's taps (above); keep the ranker's floor where precision stays high; file new classes.
+2. Next judging batches: blind (`SPOT_BLIND=1`), with controls, from the night shift's folders (its clips are top-30 per day; use
+   `night.sh batch-now` + `SPOT_RANKS` for deeper bands); upload with judge_docs.py.
+3. Once ~100/100 labels: `learn.py` v the hand ranker; ship the better one as the night's ranker if it wins on held-out seeds.
+4. Re-run a batch AFTER engage / manoeuvre / orders ship fixes for classes A-E: the same seeds, the class's signal rate before v after
+   (the spotter as a regression check).
+5. The parameter search (`param_search_proposal.md`) after labels, and only with the owners' behaviour-knob registry.
+6. Probe gaps worth adding: the shooter on hits in HIS recordings (a census request to the orchestrator), turret v target bearing.
 
 ### Questions for the lead
 - None blocking. Batch 2's page is his next gate (no hurry).
 
-### Requests / merge notes
-- `mk/spotter.mk` is new (globbed). Makefile: one additive line `LIGHT_GOALS += spotter-night-% spotter-test spotter-rank` (R47.46).
-- Not mine, left untracked: `tests/test_authority_press_on.gd.uid`, `tests/test_gunnery_pot_shot.gd.uid`.
-
-### Next steps
-1. (done) batch 2 uploaded and messaged. 2. When he judges: labels.py (precision by rank band,
-control base rate), classes for any new causes. 3. Once ~100 fine + 100 dumb exist: learn.py v hand. 4. Watch for the night
-shift's first unattended run (SUMMARY.md in builder3 `~/spotter-night/<date>/`).
+### Merge notes / leftovers
+- `mk/spotter.mk` new (globbed); one Makefile line (above). Not mine, left untracked: `tests/test_authority_press_on.gd.uid`,
+  `tests/test_gunnery_pot_shot.gd.uid`.
+- Laptop copies: `~/spotter-work/batch1/`, `~/spotter-work/batch2/` (fights, moments, clips). Upload staging `.spotter-upload*/` in
+  this worktree is git-excluded and can be deleted.
+- remote_builds trip-up (filed by the orchestrator): a TERM to a queued `remote.sh` wrapper left the remote lock waiter alive; stopped
+  by a cwd-verified pgid kill.
