@@ -81,6 +81,19 @@ sight screen's member initializer made a strip node the steam branch never used)
 on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
 check queued on builder3 (name it here). f10081d90 (gallery only) on top.
 
+**2026-10-30 ~23:00: R47.39 his Meshy monorail car.** He rejected the kit train directions (wanted "a meshy asset ... as a
+one-off like we did for the blimp ... run down and rickety"). Three nano-banana-pro image-to-image concepts from ONE side-on shape
+reference (a car on our beam, `assets/review/images/train_r47/train_side_ref.png`; the airship/bus lesson), 27 credits; page
+https://claude.ai/artifact/8fMQFqbbEFecRG2PsVBUfE; he picked A (salvaged metro car). Image-to-3D smart topology 15 credits. Slot
+`prop.monorail_car` (asset_contracts.gd), normalized `--forward=+x` (the model's long axis is x), fitted 8.98 m, roof under 16 m,
+5534 tris, textures 1024 / 512 under the web policy; a deck's `car` look key carries it (one instance, one draw), underside at the
+beam's base so its own bogie block sinks into our beam. **Meshy spend this round: 42 credits** (balance 2153).
+Laptop (UHD 620, laptop preset, under the lock, 120 frames): the car costs nothing measurable (rail 9.50/9.90 v rail + car
+8.80/9.85, interleaved, n=2). **C47.10 knob:** the TRIM monorail read +1.4/+1.5 ms over the floor twice, so under the laptop preset
+the monorail + deck alone are plain (9.15 v floor 9.00); desktop keeps trim; traps/pipes/crane keep trim everywhere (asked the lead
+via the orchestrator in player terms). Stopped my own stale queued check of 04adca907 (4 commits behind). **b9f13f946**: quick
+291/0 builder3, full check queued (name it here).
+
 **His picks so far:** looks (P1, db `picks/*`): door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept.
 Trim trial (P1b, db `trim/*`): TRIM on all four. Train (R47.38): page https://claude.ai/artifact/9PNjR9rWKNXQXBWQ9sNsLC,
 db `train/pick`, waiting. **Bar P** (the twin series) filed by the orchestrator; runs after manoeuvre's W/H and orders' O2.
