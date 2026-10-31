@@ -33,6 +33,11 @@ func test_a_shell_landing_after_the_relay_session_ended_sends_no_rpc() -> void:
 	var health := victim.health
 	shooter.fired.emit(shooter.muzzle_position(), -shooter.global_basis.z)
 	assert_eq(game_match.shells.get_child_count(), 1, "the shell is in flight")
+	# Round 47 (native, the orchestrator's grant): the shell is HELD in flight until the session has ended, so the order is
+	# the test's, not the box's (builder3 under load, orders 4536ccb0f: the session took long enough to end that the 15 m
+	# shell landed first: "the shell was still in flight when the session ended"). A shell flies on its own tick
+	# (Shell._physics_process), so disabling the shells' parent pauses exactly it; the rest of the match keeps ticking.
+	game_match.shells.process_mode = Node.PROCESS_MODE_DISABLED
 	peer.simulate_drop(60.0)  # the socket goes; the 0 ms grace ends the session at a later poll
 	# Round 36 (native, R36.22): wait for the EVENT, bounded, never a frame count. The session ends on a multiplayer poll (one
 	# a process frame) at least 1 ms after the drop; under a full check's load two physics frames carried 0-1 polls (builder0,
@@ -43,6 +48,7 @@ func test_a_shell_landing_after_the_relay_session_ended_sends_no_rpc() -> void:
 		await wait_physics_frames(1)
 	assert_eq(peer.get_connection_status(), MultiplayerPeer.CONNECTION_DISCONNECTED, "the relay session has ended")
 	assert_eq(impacts.size(), 0, "the shell was still in flight when the session ended")
+	game_match.shells.process_mode = Node.PROCESS_MODE_INHERIT  # now it lands, after the drop
 	for i in 30:
 		if not impacts.is_empty():
 			break
