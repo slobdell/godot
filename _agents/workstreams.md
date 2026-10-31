@@ -370,6 +370,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   reachable false`, 145 of them two crews whose SEAT is unreachable (not the sliver); the watchdog re-plans every 1 s for 150 s. Next round:
   trip only off-island, never on an unreachable goal, with a per-crew cap.
 
+- **R47.44 GRANT engage one line in `game/tank/tank.gd` (Tank._short_halt's cancel branch): a short halt that ends WITHOUT a round fired
+  does not arm the 4 s cooldown.** Engage's trace (builder3, d13fa2bc1 + main + native fa27d12d6, native on and off): E3's ship check
+  failed test_rules_spread because a halt for a 103 m round was cancelled when the shot dropped for a tick (pot-shot wander, or a one-tick
+  sight loss) and the cancel armed the cooldown, so the next fully laid REGULAR round left at 98-99 m on 11 m/s. Any regular shot can hit
+  it; gunnery-side gates broke scenario_cover. With the line: test_rules_spread 9/9 (round at 98 m from 1.1 m/s), pot-shot + native gun
+  12/12, scenario_cover / elements PASS; cp2's engine deck is the known coin flip (re-recorded in the ship commit). GDScript only (no twin).
+  Changes OFF games too (both sides): the sim-baseline move is this line's as much as E3's. Condition: a test that a flickering shot never
+  stalls an ordered move.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
