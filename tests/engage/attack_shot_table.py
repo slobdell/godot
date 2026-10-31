@@ -42,6 +42,7 @@ def metrics(d):
     first = [float(d["first_hit_s"][c]) if float(d["first_hit_s"][c]) >= 0 else window for c in crews]
     return {
         "stuck": sum(float(v) for v in d["stuck_s"].values()),
+        "away": sum(float(v) for v in d.get("away_m", {}).values()),
         "held_line": sum(float(v) for v in d.get("held_line_s", {}).values()),
         "first_shot": sum(float(d.get("first_shot_s", {}).get(c, -1)) if float(d.get("first_shot_s", {}).get(c, -1)) >= 0 else window for c in crews) / len(crews),
         "shots": sum(int(v) for v in d.get("shots", {}).values()),
@@ -63,7 +64,7 @@ def metrics(d):
     }
 
 
-KEYS = ["held_line", "first_shot", "shots", "accuracy", "hits_per_min", "friendly_hits", "stuck", "stuck_suppress", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "line_flips", "hits",
+KEYS = ["away", "held_line", "first_shot", "shots", "accuracy", "hits_per_min", "friendly_hits", "stuck", "stuck_suppress", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "line_flips", "hits",
         "target_dead", "lines_per_plan_tick"]
 
 

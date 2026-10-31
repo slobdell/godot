@@ -14,6 +14,9 @@ extends SceneTree
 ##   deaths, deaths_moving  crews that died, and died while moving for a shot (moving, no line, under the order): exposure
 ##   spot_changes  per crew, the distinct goals (> 2 m apart) of moves naming the target under the order: the dither count
 ##   never_reached  spots a crew was sent to and never came within 3 m of before the goal changed or the order ended
+##   away_m        (round 47, E7) per crew, metres driven AWAY from the target under the order (every tick's increase of its
+##                distance, summed): a crew that leaves the fight he ordered. `--hurt=<fraction>` starts every crew at that
+##                fraction of its hull (E7's case: hurt past the critical line, so RETREAT is on the table)
 ##   held_line_s   (round 47, Bar E) crew-seconds under the order with the target inside the gun's reach, a clear line
 ##                (Perception's eye ray: the gun's own gate), the team seeing it and the gun LOADED: able to fire, not firing
 ##   lines         ElementSituation.shot_lines over the run (cover-map lines the plan asked for) and per plan tick
@@ -217,6 +220,12 @@ func _run() -> void:
 	var grounded := SlotGround.standable_for(ground_node, _flat(target.global_position), SlotGround.envelope_of(target.unit_id))
 	if grounded.distance_to(_flat(target.global_position)) > 0.5:
 		target.place(grounded, yaw + PI)
+	# Round 47 (E7): start hurt.
+	var hurt := float(_flag("hurt", "0"))
+	if hurt > 0.0:
+		for unit_name: String in names:
+			var tank := lab.tank_of(unit_name)
+			tank.health = maxi(1, int(float(tank.max_health) * hurt))
 	for i in 3:
 		await lab.step()
 	var placed: Array = []
@@ -251,8 +260,11 @@ func _run() -> void:
 	var last_shot := {}
 	var stuck_suppress_ticks := {}
 	var held_line_ticks := {}
+	var away_m := {}
+	var last_d := {}
 	for unit_name: String in names:
 		held_line_ticks[unit_name] = 0
+		away_m[unit_name] = 0.0
 		stuck_ticks[unit_name] = 0
 		in_range_no_shot_ticks[unit_name] = 0
 		spots[unit_name] = []
@@ -283,6 +295,10 @@ func _run() -> void:
 					or String(element.task.get("verb", "")) == "attack"
 			if not under:
 				continue
+			var now_d := pos.distance_to(target_pos)
+			if last_d.has(unit_name) and now_d > float(last_d[unit_name]):
+				away_m[unit_name] = float(away_m[unit_name]) + now_d - float(last_d[unit_name])
+			last_d[unit_name] = now_d
 			var in_range := pos.distance_to(target_pos) <= float(tank.weapon.get("range", 60.0)) * ElementPlan.ENGAGE_RANGE_FACTOR
 			var shot := map.clear_line(pos, target_pos)
 			var moving := tank.estimated_velocity.length() >= 0.5
@@ -350,7 +366,7 @@ func _run() -> void:
 		stuck_s[unit_name] = _r(float(stuck_ticks[unit_name]) / SimClock.TICK_RATE)
 		no_shot_s[unit_name] = _r(float(in_range_no_shot_ticks[unit_name]) / SimClock.TICK_RATE)
 	print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if ElementPlan.ATTACK_SHOT else "off",
-			"crews": crews_n, "held_line_s": held_line_s, "shots": _shots,
+			"crews": crews_n, "held_line_s": held_line_s, "away_m": away_m, "hurt": hurt, "press_on": TankBrain.PRESS_ON, "shots": _shots,
 			"first_shot_s": first_shot, "friendly_hits": _friendly_hits, "pot_shot": Gunnery.POT_SHOT, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
 			"feature_at": [_r(center.x), _r(center.z)], "target_at": [_r(target_at.x), _r(target_at.z)],
 			"crew_at": placed, "target_placed": [_r(target.global_position.x), _r(target.global_position.z)],
