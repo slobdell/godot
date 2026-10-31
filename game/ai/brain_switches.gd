@@ -84,7 +84,7 @@ static var native_yield := true  # Round 33 (N5.Y): the native drive runs Moveme
 static var native_gate_width := true  # Round 45 (N2): RtsControls.gate_width for the column lay natively (gate_width_native.cpp, RtsControls.gate_width_edge_on); test_native_gate_width holds it to the GDScript
 static var native_untangle := true  # Round 45 (N2b, R45.3): SelectionSquads.untangle_whole's search natively (untangle_native.cpp); test_native_untangle holds it to the GDScript
 static var native_assign := true  # Round 45 (R45.16): SelectionSquads._assign's search natively (assign_native.cpp); test_native_assign holds it to the GDScript
-static var native_place := true  # Round 47 (N2): TacticsFormation.place natively (place_native.cpp, NativePlace); test_native_place holds it to the GDScript
+static var native_place := false  # Round 47 (N2): TacticsFormation.place natively (place_native.cpp, NativePlace); test_native_place holds it to the GDScript. OFF until the proof on every place() of his four recordings is EQUAL (R47 orchestrator)
 static var native_controller := false  # Round 28 (N7.3a): OrderController._physics_process natively (controller_native.cpp: the stride hold, think then execute, the measurement bookkeeping); OFF until its check
 ## Round 31 (brains B8, a CP-H consumer, C31.4; R31.1: OPT-IN): the element's re-seat / make-room clock reads the honest
 ## speed (`Element.reads_slow`). NAMING it (`--brains-off=realslow`) flips it against REALSLOW_DEFAULT, as manoeuvre's

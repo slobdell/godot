@@ -9,7 +9,8 @@ extends RefCounted
 
 ## TANK_NATIVE_PLACE_VERIFY=1 (env): every native place is also run in GDScript and compared (byte for byte); a mismatch prints
 ## "NativePlace verify mismatch ..." and every VERIFY_EVERY calls a "NATIVE_PLACE verified N, M mismatches" line (make
-## native-verify-scenarios greps both; his replays: REPLAY_ENV). Measurement only: the GDScript answer is discarded.
+## native-verify-scenarios greps both; his replays: REPLAY_ENV). It runs the C++ even while native_place is OFF (the proof before
+## the switch ships ON). Measurement only: the GDScript answer is discarded.
 static var verify := OS.get_environment("TANK_NATIVE_PLACE_VERIFY") == "1"
 static var verified := 0
 static var mismatches := 0
@@ -17,7 +18,7 @@ const VERIFY_EVERY := 500
 
 
 static func usable() -> bool:
-	var ok := BrainSwitches.native and BrainSwitches.native_place and NativeBridge.available and not TacticsFormation.DEFORM_ENABLED
+	var ok := BrainSwitches.native and (BrainSwitches.native_place or verify) and NativeBridge.available and not TacticsFormation.DEFORM_ENABLED
 	if ok and NativeBridge.counting:
 		NativeBridge.took("place")
 	return ok
@@ -47,9 +48,12 @@ static func place(members: Array, formation: String, anchor: Vector3, heading: V
 
 static func _verify(out: Array[Dictionary], members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing: float,
 		opts: Dictionary) -> void:
+	var was := BrainSwitches.native_place
+	verify = false
 	BrainSwitches.native_place = false
 	var live := TacticsFormation.place(members, formation, anchor, heading, spacing, opts)
-	BrainSwitches.native_place = true
+	BrainSwitches.native_place = was
+	verify = true
 	verified += 1
 	if var_to_bytes(live) != var_to_bytes(out):
 		mismatches += 1
