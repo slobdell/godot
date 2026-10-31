@@ -55,6 +55,23 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-31 ~02:30 PDT) — the yield-cycle flake (the orchestrator's ask; GRANT tests/test_manoeuvre_noprogress.gd).**
+test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle red in mapkit's check of 8dc9697b4 (shard 4/7), green elsewhere. **Not load,
+not wall time, not native: the lab is deterministic per PROCESS HISTORY, and this case sits on a knife edge.** All builder3 light,
+155a8fc0e's tree (main c9e6520b3), `make native-repeat` (new: FILTER x REPEAT_N, FILTERS=a;b;c one run each, REPEAT_JITTER=on):
+- Alone, 10 / 10 identical (Hunters_2 leaves at tick 204-205 of the 300 allowed), native ON; the same with NATIVE=off.
+- After the failing shard's 49 preceding files (taken from mapkit's build/check/logs/test.log): red 3 / 3, mapkit's numbers to the
+  digit (Hunters_2 / Hunters_4 never within 8 m). Bisected: test_manoeuvre_face_settle (its 5 tests together, no one alone) is
+  enough; other files move Hunters_2's tick 204-208. Start tick 1, nav wait 1-2 frames in every history (CYCLE_START), so not
+  the lab's start. By tick 30 the same decisions sit a few cm apart: the physics, as roadmap's UNOWNED "a same-process rematch
+  is not deterministic" (round 33: Jolt settles a hull differently after earlier matches; a fresh World3D does not reset it).
+- Robustness, fresh processes, start poses moved <= 1 cm / 0.1 deg (CYCLE_JITTER=1..20): **19 / 20 green, seed 19 red** with the
+  same signature; NATIVE=off run for run identical (same seed red, same ticks).
+- So it is the GAME: the sliver fix holds for ~95 % of starts; a centimetre (or any history) puts Hunters_2 / 4 back on the sliver
+  for the whole 15 s. Not fixed here (manoeuvre's rule). Next round: manoeuvre makes the leave robust, bar = CYCLE_JITTER 1..20
+  all leave (`make native-repeat FILTER=test_manoeuvre_noprogress::test_cpu REPEAT_N=20 REPEAT_JITTER=on`); and the
+  process-history physics state (netplay / replays in one process) stays UNOWNED in roadmap.md.
+
 **FINAL REPORT (DRAFT, 2026-10-30 ~23:00 PDT; final once e5fa1f1be's check is named). On main: 6f19722ae (GREEN, 3523 / 0,
 29 ALL JUDGED, sim-baseline unmoved) and 27ea82fa5 (merged as 8d37b9796 with route_doors.gd's stub-order fix 94646bf63). Candidate:
 e5fa1f1be (full check queued, builder3): + test_match_shell_dropped_peer's flake fix, E3's pot_shot_halts line (02f308371, a no-op
