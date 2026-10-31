@@ -22,6 +22,7 @@
 #include "untangle_native.h"
 #include "assign_native.h"
 #include "place_native.h"
+#include "esit_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
@@ -197,6 +198,16 @@ public:
 	// Round 45 (R45.16): SelectionSquads._assign's exhaustive search (assign_native.cpp).
 	PackedInt32Array assign_least_total(const PackedVector3Array &centers, const PackedVector3Array &slots) const {
 		return ::godot::assign_least_total(centers, slots);
+	}
+	// Round 47 (N4): ElementSituation._entries (esit_native.cpp); the consts as NativeEsit reads them live.
+	Dictionary esit_entries(Object *game_match, int64_t team, const PackedStringArray &member_names, const Vector3 &heading,
+			const Dictionary &was_known, const Dictionary &roles, const Dictionary &consts) const {
+		EsitConsts c;
+		c.FIRE_TICKS = consts.get("FIRE_TICKS", c.FIRE_TICKS);
+		c.HOLD_THROTTLE = consts.get("HOLD_THROTTLE", c.HOLD_THROTTLE);
+		c.HOLD_SPEED_MPS = consts.get("HOLD_SPEED_MPS", c.HOLD_SPEED_MPS);
+		c.KNOWN_M = consts.get("KNOWN_M", c.KNOWN_M);
+		return ::godot::esit_entries(game_match, team, member_names, heading, was_known, roles, c);
 	}
 	// Round 47 (N2): TacticsFormation.place (place_native.cpp); NativePlace marshals the catalogue's part and the switches.
 	Array formation_place(const Array &members, const String &formation, const Vector3 &anchor, const Vector3 &heading, double spacing,

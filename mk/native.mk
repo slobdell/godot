@@ -185,13 +185,14 @@ native-verify-suite: import ## Stage 1's doors audit: the suite + AI scenarios w
 # gate fails any target whose log shows them): FAIL on a verify mismatch (NativeExec verify), a failing scenario, or a crash.
 native-verify-scenarios: import ## Stage 1's doors guard for check: the AI scenarios with every owned native execute verified (~4 min builder0)
 	@mkdir -p $(BUILD_DIR)
-	@s=0; TANK_NATIVE_EXEC_VERIFY=1 TANK_NATIVE_PLACE_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+	@s=0; TANK_NATIVE_EXEC_VERIFY=1 TANK_NATIVE_PLACE_VERIFY=1 TANK_NATIVE_ESIT_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 		> $(BUILD_DIR)/native-verify-scenarios.log 2>&1 || s=$$?; \
-	v=$$(grep -cE "NativeExec verify|NativePlace verify" $(BUILD_DIR)/native-verify-scenarios.log || true); \
+	v=$$(grep -cE "NativeExec verify|NativePlace verify|NativeEsit verify" $(BUILD_DIR)/native-verify-scenarios.log || true); \
 	grep "^NATIVE_PLACE verified" $(BUILD_DIR)/native-verify-scenarios.log | tail -1 || true; \
+	grep "^NATIVE_ESIT verified" $(BUILD_DIR)/native-verify-scenarios.log | tail -1 || true; \
 	grep -h "^scenarios: " $(BUILD_DIR)/native-verify-scenarios.log || true; \
 	echo "native-verify-scenarios: runner exited $$s, $$v verify mismatches (build/native-verify-scenarios.log)"; \
-	if [ "$$v" != 0 ]; then grep -m3 -E "NativeExec verify|NativePlace verify" $(BUILD_DIR)/native-verify-scenarios.log | cut -c1-300; exit 1; fi; \
+	if [ "$$v" != 0 ]; then grep -m3 -E "NativeExec verify|NativePlace verify|NativeEsit verify" $(BUILD_DIR)/native-verify-scenarios.log | cut -c1-300; exit 1; fi; \
 	grep -q "^scenarios: .* 0 failed" $(BUILD_DIR)/native-verify-scenarios.log || { echo "native-verify-scenarios: a scenario failed or the runner did not finish"; exit 1; }; \
 	[ $$s = 0 ] || [ $$s = 1 ] || { echo "native-verify-scenarios: the runner crashed (exit $$s)"; exit 1; }
 
