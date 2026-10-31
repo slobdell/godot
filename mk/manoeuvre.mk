@@ -590,3 +590,30 @@ manoeuvre-bar-m-series: native-fresh import ## manoeuvre Bar M: W1 (manoeuvre-ba
 	@for s in $(BARM_AUTH_SEEDS); do if cmp -s <(grep '^AUTHORITY_PROBE ' $(BUILD_DIR)/engage/authority/barm-base/$$s.log) <(grep '^AUTHORITY_PROBE ' $(BUILD_DIR)/engage/authority/barm-buried/$$s.log); then echo "G8 seed $$s identical"; else echo "G8 seed $$s DIFFERS"; fi; done
 NOPROGRESS_WATCH_TRACE ?=
 export NOPROGRESS_WATCH_TRACE
+
+# ---- round 47: Bar W (the watchdog) and Bar H (holdyield) series, each ONE remote run (one sync of the frozen tree) -------------
+BARW_DIR ?= $(BUILD_DIR)/manoeuvre/bar-w
+.PHONY: manoeuvre-bar-w-series
+manoeuvre-bar-w-series: native-fresh import ## manoeuvre Bar W: W1' (group probe base v watch, 12449-12472) and W2' (route-census base v watch, 12473-12496) -> $(BARW_DIR)/
+	@rm -rf $(BARW_DIR) && mkdir -p $(BARW_DIR)
+	@$(MAKE) --no-print-directory manoeuvre-bar-m BARM_SEEDS="$$(seq -s ' ' 12449 12472)" BARM_HEADINGS=crew BARM_JOBS=6 \
+		BARM_ARMS="base:--noprogress-census watch:--traffic-on=noprogress,--noprogress-census" BARM_DIR=$(BARW_DIR)/w1
+	$(PYTHON) tests/manoeuvre/barm_judge.py $(BARW_DIR)/w1/logs --arms=base,watch --touched=watch | tee $(BARW_DIR)/w1-judge.txt
+	@for arm in base watch; do fl="--noprogress-census"; [ $$arm = watch ] && fl="--traffic-on=noprogress --noprogress-census"; \
+		$(MAKE) --no-print-directory route-census ROUTE_CENSUS_SEEDS="$$(seq -s ' ' 12473 12496)" ROUTE_CENSUS_FLAGS="$$fl" > $(BARW_DIR)/w2-$$arm.txt 2>&1; \
+		rm -rf $(BARW_DIR)/w2-$$arm && cp -r $(BUILD_DIR)/route-census $(BARW_DIR)/w2-$$arm; done
+	$(PYTHON) tests/manoeuvre/barm_w2_judge.py $(BARW_DIR)/w2-base $(BARW_DIR)/w2-watch | tee $(BARW_DIR)/w2-judge.txt
+
+BARH_DIR ?= $(BUILD_DIR)/manoeuvre/bar-h
+.PHONY: manoeuvre-bar-h-series
+manoeuvre-bar-h-series: native-fresh import ## manoeuvre Bar H: engage's lane probe base v hold (13001-13024 + named 12328), the group probe (13001-13006), the authority probe (13019-13024) -> $(BARH_DIR)/
+	@rm -rf $(BARH_DIR) && mkdir -p $(BARH_DIR)
+	@for arm in base hold; do fl=""; [ $$arm = hold ] && fl="--traffic-on=holdyield"; \
+		$(MAKE) --no-print-directory engage-lane-probe LANE_SEEDS="$$(seq -s ' ' 13001 13024) 12328" LANE_TAG=barh-$$arm LANE_FLAGS="$$fl" > $(BARH_DIR)/lane-$$arm.txt 2>&1; \
+		cp -r $(BUILD_DIR)/engage/lane/barh-$$arm $(BARH_DIR)/lane-$$arm; \
+		$(MAKE) --no-print-directory engage-authority-probe AUTH_SEEDS="13019 13020 13021 13022 13023 13024" AUTH_ARM=on AUTH_JOBS=6 AUTH_PROBE_TAG=barh-$$arm AUTH_PROBE_FLAGS="$$fl" > $(BARH_DIR)/auth-$$arm.txt 2>&1; \
+		cp -r $(BUILD_DIR)/engage/authority/barh-$$arm $(BARH_DIR)/auth-$$arm; done
+	@$(MAKE) --no-print-directory manoeuvre-bar-m BARM_SEEDS="13001 13002 13003 13004 13005 13006" BARM_HEADINGS=crew BARM_JOBS=6 \
+		BARM_ARMS="base:--noprogress-census hold:--traffic-on=holdyield,--noprogress-census" BARM_DIR=$(BARH_DIR)/group
+	$(PYTHON) tests/manoeuvre/barm_judge.py $(BARH_DIR)/group/logs --arms=base,hold --touched=watch | tee $(BARH_DIR)/group-judge.txt
+	@for s in 13019 13020 13021 13022 13023 13024; do if cmp -s <(grep '^AUTHORITY_PROBE ' $(BARH_DIR)/auth-base/$$s.log) <(grep '^AUTHORITY_PROBE ' $(BARH_DIR)/auth-hold/$$s.log); then echo "G4 seed $$s identical"; else echo "G4 seed $$s DIFFERS"; fi; done | tee $(BARH_DIR)/g4.txt
