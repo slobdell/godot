@@ -98,6 +98,12 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
   with the tick profile. **GRANT native the ray function of `game/match/visibility_field.gd` as a C++ seam** (GDScript body kept as the
   fallback), output-identical with a VERIFY in check, priced with the same tick profile; ON when EQUAL and faster (memory: core in C++).
 
+- **R48.9 The CPU move <-> hold order flap (manoeuvre found it, orders traced it) is ENGAGE's.** Crossing 13216 Rust_Hunters_4 / 2,
+  ticks 1757-1775 (stream/orders b50b34aa2, builder3, n 1, `make order-flap-trace FLAP_FLAGS=--follow-station=nose`): the ELEMENT's
+  3-tick update alternates a facing `move` far west and a verb-less `hold` (element.gd ~1981: an `attack` desired with no target becomes
+  `hold`, `to` erased), a new Orders id each time. Fix the target-less attack in element_plan's engagement choice, or a narrow guard in
+  element.gd's re-issue; after Bar E11's run, before E3.
+
 ### Bars (round 48)
 _(filed by each stream before any number)_
 
