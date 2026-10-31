@@ -11,6 +11,8 @@ extends TestCase
 const RIG_AT := Vector3(-66.0, 0.0, -22.0)
 const TARGET_AT := Vector3(-41.0, 0.0, -9.0)
 const SECONDS := 12.0
+## A squadmate of his that sees the target (in his match Guns_3 and the team's intel did): it holds its fire.
+const SPOTTER_AT := Vector3(-41.0, 0.0, -34.0)
 
 
 func teardown() -> void:
@@ -24,9 +26,11 @@ func _run(attack_line: bool) -> Array:
 	var lab := TacticsLab.create(self, 101, "crossing")
 	var rig := lab.unit(Match.Team.GREEN, "Green_Guns_4", RIG_AT, -PI / 2.0, "gang_tank")  # facing +x (east)
 	var target := lab.gun(Match.Team.RUST, "Rust_Hunters_2", TARGET_AT, PI / 2.0, "syn_ifv")  # facing west
+	var spotter := lab.gun(Match.Team.GREEN, "Green_Eyes_1", SPOTTER_AT, 0.0, "gang_scout")
 	await lab.start()
 	(lab.game_match.brains.get_node("Orders_Rust_Hunters_2") as OrderController).set_orders({"type": "stop"}, {"type": "hold_fire"})
-	var blocked_at_start := not Perception.has_line_of_sight(rig, target)
+	(lab.game_match.brains.get_node("Orders_Green_Eyes_1") as OrderController).set_orders({"type": "stop"}, {"type": "hold_fire"})
+	var blocked_at_start := not Perception.has_line_of_sight(rig, target) and Perception.has_line_of_sight(spotter, target)
 	var element := lab.element(["Green_Guns_4"], "Guns")
 	element.assign({"verb": "attack", "target": "Rust_Hunters_2"})
 	var shots: Array = []
@@ -39,15 +43,18 @@ func _run(attack_line: bool) -> Array:
 		if not shots.is_empty():
 			break
 	var first := (int(shots[0]) - start_tick) / float(SimClock.TICK_RATE) if not shots.is_empty() else -1.0
-	print("ATTACK_LINE arm %s: first shot %.2f s, drove %.1f m, line blocked at start %s" % [
-			"on" if attack_line else "off", first, farthest, blocked_at_start])
+	var brain := lab.game_match.brains.get_node_or_null("Brain_Green_Guns_4") as TankBrain
+	print("ATTACK_LINE arm %s: first shot %.2f s, drove %.1f m, staged %s, rig at %s, seen by team %s, choice %s, why %s" % [
+			"on" if attack_line else "off", first, farthest, blocked_at_start, rig.global_position.snappedf(0.1),
+			lab.game_match.is_visible_to(Match.Team.GREEN, target), brain.choice.get("option", "") if brain != null else "?",
+			brain.why if brain != null else "?"])
 	lab.dispose()
 	return [first, farthest, blocked_at_start]
 
 
 func test_today_the_rig_behind_the_building_does_not_fire_in_the_window() -> void:
 	var off: Array = await _run(false)
-	assert_true(off[2], "the stage: Block_1 blocks the rig's line at the start (else this case tests nothing)")
+	assert_true(off[2], "the stage: Block_1 blocks the rig's line at the start and the spotter sees the target (else this case tests nothing)")
 	assert_true(float(off[0]) < 0.0, "--attack-line=off is today's: no shot in %.0f s (first %.2f s)" % [SECONDS, off[0]])
 
 
