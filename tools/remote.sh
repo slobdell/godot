@@ -263,7 +263,7 @@ fi
 # native/build/ (round 23: the GDExtension's per-machine .so and CMake tree) are builder0's own, like .godot/.
 rsync -az --delete -e "ssh ${ssh_opts[*]}" \
 	--filter='P .tools' --filter='P .godot/' --filter='P build/' --filter='P node_modules/' \
-	--filter='P native/bin/' --filter='P native/build/' \
+	--filter='P native/bin/' --filter='P native/build/' --filter='P /.remote-synced' \
 	--exclude='.git/' --exclude='.tools' --exclude='.godot/' --exclude='build/' --exclude='node_modules/' \
 	--exclude='assets/incoming/' --exclude='__pycache__/' \
 	--exclude='native/bin/' --exclude='native/build/' \
