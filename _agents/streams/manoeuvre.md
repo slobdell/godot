@@ -134,6 +134,27 @@ the post unchanged.
 - **Not covered, said:** his HOLD *verb* (a live order whose goal is in `order["goal"]`, not `_his_post_at`) still returns the crew
   to the doorway. The grant names his post, and engage owns the hold order.
 
+### Spotter's two Sumps moments (R47.16 relay, 2026-10-31 ~00:30): classified from HIS census; a next-round note, not built
+
+His Sumps match 2026-10-30T15-53-39. The replay is NOT his match here: 40 m off by tick 900 (builder3 light, ead694538, `make
+manoeuvre-stall-trace`), so both moments are read from his own recorded census rows (one a second, every crew's pos / phase /
+blocked / order), never from the replay.
+- **Green_Alpha_5, 101-113 s (ticks 3060-3360): a NEW class for this stream, a parked friend that refuses.** On HIS direct move
+  (`src player`) it stops at (1.6, 23.9), `blocked: Green_Charlie_1`, for 10 s. Charlie_1 is his artillery, ARRIVED with no order of
+  its own, 6.6 m away. It does not give way until tick 3360 (then `yielding Green_Alpha_5`, and Alpha_5 drives at 3420). The likely
+  reading: a set-up battery refusing the ask (Movement.ask's round-30 `setup` rule: a hull set up on a fire post never gives way, and
+  the asker is meant to go round it, CP1a2 / ORCA). Here the asker did not go round, it waited. To stage: Charlie_1 set up on a fire
+  post at its tick-3060 pose and Alpha_5 asked past it. The test is "his crew goes round a set-up battery within N s". Owner:
+  traffic's go-round (this stream), with engage's fire-post rule as given.
+- **Green_Charlie_5, 33-57 s (ticks 990-1710): the no-progress class (Bars M / W), not a friend.** His artillery on its element's
+  march (Charlie's `screen` to (-1.2, 58.6), then a move). It sits within 1 m of (17.7, 53.5) for ~17 s. 14 of the 16 rows from tick
+  1200 read `blocked: terrain`; only 1260-1320 read `blocked: Green_Delta_3`, which was already `yielding Green_Charlie_5`. So it is
+  a terrain stall short of its seat, the class Bar M (`buried`, ON) and Bar W (watchdog, failed) target. The census holds no goal, so
+  whether its seat was buried or off-island needs a staged run (Charlie at its tick-990 poses with the screen task; the census
+  `noprog_s` per crew, buried ON as shipped).
+- Spotter's ranker: its #3 (his Locks Hunters_4 detour) is M1's case, found unprompted, which agrees with it working. Its
+  "blocked by a friendly" label for Charlie_5 is 2 rows of 16; it should read the majority cause.
+
 ### NOW (2026-10-30 ~19:15) — where this stream is (superseded by the REPORT above)
 
 - **M1 done** (report below). **M2a `buried` built; Bar M's frozen tree 1aa41aeaf GREEN builder3 (3522 / 0, check exited 0).** From
