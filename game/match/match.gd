@@ -1667,7 +1667,7 @@ func is_point_spotted(team: int, point: Vector3) -> bool:
 static func _clear_view(viewer: Tank, point: Vector3) -> bool:
 	var eye := Vector3.UP * Perception.EYE_HEIGHT
 	var query := PhysicsRayQueryParameters3D.create(viewer.global_position + eye, Vector3(point.x, 0.0, point.z) + eye,
-			Perception.WORLD_MASK)
+			Perception.eye_mask())  # round 47 (R47.36, native's grant): a sight screen blocks this eye too
 	return viewer.get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
