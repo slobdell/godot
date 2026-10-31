@@ -87,6 +87,7 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E2 dev reads | **no measurable effect from either switch** (below) -> **E2a + E2b DROPPED (R47.17), code removed** (game files byte-identical to e306ce27f; native's twin reverted) |
 | E7 his order beats RETREAT | code + tests GREEN at **14ccc9b91** (builder3 `native test` press_on / native_decide / combat_envelope / native_gun / native_exec_state: 45 passed, 0 failed). `--press-on`, **OFF** until native's `_obey` twin (spec + hash sent). Dev read on route's Locks case (staged 1440) running |
 | E7 Bar E7 | **FILED** + **Amendment 1** (his side only; G6 the CPU side untouched), both before any number on 12601-12648. GDScript green at 43ed628f1 for my tests (press_on 6/6); waiting on native's re-twin (his_side), then the full check on the frozen pair hash, then the series |
+| E6 army_cost read | **DONE (report only)**: the laptop preset's 20-vehicle cap halves a swarm faction's skirmish army (below); sent to the orchestrator |
 | E3 pot shots | **code behind `--pot-shot` (default OFF, his call)**; test green at 087d1732a (first round 12 v 28 ticks); dev reads below; **his question sent to the orchestrator** (recommended: yes) |
 | (E3, old row) | in progress: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
 
@@ -129,6 +130,13 @@ his 145 acquiring seconds were first fixes. Nothing in the gate is broken; the g
   native twin re-proves on the narrowed rule before the freeze. **Added guard G6, the CPU side untouched:** the same probe with
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
+
+**E6 the army_cost read (his four recordings' headers, Units costs):** `make skirmish` with a faction budgets BOTH sides at
+Units.BASELINE_BUDGET (1000 credits = 5000 points, `skirmish_mode.lineup_plan`), then the laptop preset cuts each side to
+squad_cap 4 x 5 = 20 vehicles (C25.6, largest squad first). Gangs are cheap: ~40 vehicles of budget, 20 kept = **2490 points**
+(Crossing: 6 War Rigs, 7 IFVs, 4 scouts, 3 support) v the syndicate's whole 17 = 5000. Condemned (Locks): 20 = 4000 v 5170. In the
+garage he picks within the cap: Sumps 3430 v 3385, Parade 3430 v 3320 (level). Not intended balance; the owner is Army / skirmish
+or balance (not engage): trim the CPU to the capped player's cost, or value a capped swarm's vehicles. Balance waits (brief).
 
 **E3 pot shots, dev reads (never a bar; the gun's C++ paths off in both arms):**
 - *War Rigs only* (`--hull=gang_tank`, attack-shot probe, dev seeds 7001-7012, builder3, 102a18395, n = 12 paired): first round
