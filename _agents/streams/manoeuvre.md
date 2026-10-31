@@ -69,7 +69,7 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~19:50) — where this stream is
+### NOW (2026-10-30 ~19:15) — where this stream is
 
 - **M1 done** (report below). **M2a `buried` built; Bar M's frozen tree 1aa41aeaf GREEN builder3 (3522 / 0, check exited 0).** From
   that check: **D1 PASS** (his staged Locks case, Burners2_4 0.0 s <= 1.0) and **G6 PASS** (Crossing guard 1.0 / 0 / 1.97 / 0 s < 2.5).
@@ -89,7 +89,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
   not asserted). Its own bar follows Bar M.
 - **Requests to other streams:** none open (route's sliver request answered by the grant). **Questions for the lead:** none.
 
-### BAR W (FILED 2026-10-30 ~19:55, before any number; the watchdog `noprogress` + Pathing.reroute off a sliver)
+### BAR W (FILED 2026-10-30 ~19:15, before any number; the watchdog `noprogress` + Pathing.reroute off a sliver)
 
 **The change:** `--traffic-on=noprogress` (game/ai/noprogress_watch.gd) and Pathing.reroute's off-island route (R47.25), as committed
 in 5cacac0af. **Frozen tree:** the first commit after 537fca5ee whose check is green (Bar M's rule as it then stands, both arms).
@@ -112,9 +112,9 @@ whatever Bar M decides (OFF if Bar M fails). **Seeds:** W1' = Bar M's W1 workloa
 
 Ties count as sooner-or-identical (lesson 344). At most two amendments, before numbers.
 
-### BAR M (FILED 2026-10-30 ~18:55, before any number; frozen tree = the first commit after 482f5e2b3 whose check is named green)
+### BAR M (FILED 2026-10-30 ~17:50, before any number; frozen tree = the first commit after 482f5e2b3 whose check is named green)
 
-**AMENDMENT 1 (2026-10-30 ~19:40, before any bar number; the lines are unchanged, the rule's trigger is corrected):** a pipeline dry
+**AMENDMENT 1 (2026-10-30 ~18:00, before any bar number; the lines are unchanged, the rule's trigger is corrected):** a pipeline dry
 run on DEV seed 7001 (never a bar) showed the rule acting in every cell of his group click (764 swaps on Locks, 609 of them the
 plain > 4 m trigger, median gap 6 m): in a five-squad click a station in a building on a narrow street is routine and today's
 grounding slides it along the wall. His corner is PINNED (the grounded point stays put while the station travels on). So the > 4 m
@@ -155,7 +155,7 @@ my census in each log; if it has not landed when W1 ends, W2 is dropped and said
 Ties count as "sooner or identical" (lesson 344). If D1/D2 pass and a guard fails, I write what he would see ON v OFF and message the
 orchestrator the same hour (lesson 339). Amendments: at most two, before numbers (lesson 345).
 
-### M1 REPORT (2026-10-30 ~18:10): the trace, cause per crew
+### M1 REPORT (2026-10-30 ~17:00): the trace, cause per crew
 
 Tools: `tests/manoeuvre/stall_trace.gd` + `make manoeuvre-stall-trace` (his recording replayed as he played; one STALL_TRACE row a tick
 per crew); `tests/test_manoeuvre_noprogress.gd` (his two cases staged in a lab; `NOPROGRESS_TRACE=on` prints a row a second). Raw rows:
