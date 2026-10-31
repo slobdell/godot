@@ -36,6 +36,9 @@ RULES = {
     "holdyield": ("traffic-off", "holdyield", "2026-10-31T00-13-18"),  # manoeuvre, merge c41ae23bb (R47.42)
     "group_merged": ("group-merged", "off", "2026-10-31T00-41-40"),  # orders O1 v3, merge de3176388 (R47.41)
     "pot_shot": ("pot-shot", "off", "2026-10-31T03-14-17"),       # engage E3, merge 8d51777cc (R47.37)
+    # R47.44 (engage): an unfired short halt's cooldown holds the long round; ON since the same merge, its escape added later.
+    "halt_cancel": ("halt-cancel", "old", "2026-10-31T03-14-17"),  # engage R47.44, merge 8d51777cc
+    "outranged": ("outranged", "off", "2026-10-31T04-17-53"),     # engage E10 (R47.51), this commit's time (no recording falls before the merge)
 }
 STAMP = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})")
 

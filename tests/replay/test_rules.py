@@ -21,7 +21,7 @@ def recording(header):
 
 
 ROUND47 = ["--press-on=off", "--battery-screen=off", "--traffic-off=buried", "--traffic-off=holdyield", "--group-merged=off",
-           "--pot-shot=off"]
+           "--pot-shot=off", "--halt-cancel=old", "--outranged=off"]
 ALL_OFF = ["--lane-clear=off", "--group-veto=off", "--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"] + ROUND47
 ROUND46 = ("crossing", "locks", "sumps", "parade")
 
@@ -42,7 +42,8 @@ class Rules(unittest.TestCase):
 
     def test_the_stamp_decides(self):
         on = {"lane_clear": True, "group_veto": True, "shortfwd": True, "holdway": True, "army_money": True, "press_on": True,
-              "battery_screen": True, "buried": True, "holdyield": True, "group_merged": True, "pot_shot": True}
+              "battery_screen": True, "buried": True, "holdyield": True, "group_merged": True, "pot_shot": True,
+              "halt_cancel": True, "outranged": True}
         self.assertEqual(rules.decide(recording({"rules": on}))[0], [])
         self.assertEqual(rules.decide(recording({"rules": dict(on, holdway=False)}))[0], ["--traffic-off=holdway"], "the web build")
         self.assertEqual(rules.decide(recording({"rules": {"lane_clear": False}}))[0], ALL_OFF, "undated: off")
@@ -53,7 +54,8 @@ class Rules(unittest.TestCase):
         self.assertEqual(rules.decide(before)[0], ["--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"] + ROUND47)
         # Between E7 (19:45) and holdyield (00:13): press_on / battery_screen / buried ON, holdyield / group_merged off.
         evening = recording({"path": "build/recordings/2026-10-30T22-00-00-locks.jsonl", "rules": {"lane_clear": True}})
-        self.assertEqual(rules.decide(evening)[0], ["--traffic-off=holdyield", "--group-merged=off", "--pot-shot=off"])
+        self.assertEqual(rules.decide(evening)[0], ["--traffic-off=holdyield", "--group-merged=off", "--pot-shot=off",
+                                                      "--halt-cancel=old", "--outranged=off"])
 
     def test_his_own_flag_and_the_replays_flag_are_left_alone(self):
         self.assertEqual(rules.decide(recording({"flags": {"lane-clear": "off"}}))[0], ALL_OFF[1:])

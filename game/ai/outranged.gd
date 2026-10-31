@@ -3,10 +3,10 @@ extends RefCounted
 ## E10 (R47.48, engage): a crew taking fire from beyond its own reach. One memory per match of which rounds struck which
 ## crew and where each was fired from: what a crew in the field reads from the rounds themselves (where they come from),
 ## never a fog cheat on the shooter's identity or health. Fed by the match's own weapon_fired / projectile_impact events,
-## in their order, so it is deterministic. `--outranged=on|off` (default OFF until Bar E10) switches what brains do with it;
-## the memory itself is harmless and only built when the switch is on.
+## in their order, so it is deterministic. `--outranged=off` is the escape (R47.51: ON after Bar E10; D1 and every guard passed,
+## D2's reverse half did not, round 48); the memory is built only when the switch is on.
 
-const OUTRANGED_DEFAULT := false
+const OUTRANGED_DEFAULT := true
 static var ON := _flag()
 
 ## A crew counts as outranged after this many damaging hits inside WINDOW_S, each fired from beyond its own weapon's

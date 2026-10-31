@@ -438,7 +438,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
-- **Bar E10 VERDICT (2026-10-31 ~04:25 PDT): FAILS as filed on D2's reverse half (ON 0.57 x OFF v the 0.5 bound); D1, D2's
+- **Bar E10 VERDICT (2026-10-31 ~04:15 PDT): FAILS as filed on D2's reverse half (ON 0.57 x OFF v the 0.5 bound); D1, D2's
   retreat half and every guard pass.** Frozen d8d4979ca, its full check GREEN (builder3 `make check exited 0`, 3630 / 0, ALL
   JUDGED, sim-baseline unmoved = G5 PASS). builder3 (devia), native ON. 9 of 48 seeds per workload drew no stage that stands
   (the probe's "no stage stands", the same in both arms), so n = 39 paired each. **D1 PASS** (W1, 13025-13072, CPU side):

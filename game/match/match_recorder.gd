@@ -156,7 +156,8 @@ static func rules() -> Dictionary:
 			# Round 47 (native): the other sim rules that shipped ON this round (tests/replay/rules.py RULES).
 			"press_on": TankBrain.PRESS_ON, "battery_screen": RtsControls.BATTERY_SCREEN, "buried": not Traffic.off("buried"),
 			"holdyield": not Traffic.off("holdyield"), "group_merged": SelectionSquads.merged_mode() == "all",
-			"pot_shot": Gunnery.POT_SHOT}
+			"pot_shot": Gunnery.POT_SHOT, "halt_cancel": not Tank.HALT_CANCEL_OLD,
+			"outranged": Outranged.ON}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the
