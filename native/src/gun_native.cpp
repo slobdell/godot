@@ -721,16 +721,16 @@ struct Gun {
 			const double needed = acquire_seconds(target, hull_distance);
 			const double laid = v.l_progress();
 			const double effective = (double)weapon.get(k.effective_range, (double)weapon.get(k.range, 0.0));
-			// Round 47 (engage E3 ship fix): `and not Gunnery.pot_shot_halts(tank, aim)` (the GDScript's own rule, called; absent on a
-			// tree without it = false): a crew whose short halt is worth it at this distance halts and fires a real shot instead.
-			static const StringName pot_shot_halts("pot_shot_halts");
-			if (v.l_target() == String(target->get_name()) && laid >= 0.4 && laid < needed && hull_distance <= effective &&
-					!(Object::cast_to<Script>(gscript) != nullptr && Object::cast_to<Script>(gscript)->has_method(pot_shot_halts) &&
-							(bool)gscript->call(pot_shot_halts, tank, aim))) {
+			if (v.l_target() == String(target->get_name()) && laid >= 0.4 && laid < needed && hull_distance <= effective) {
 				const int64_t tick = game_match != nullptr ? (int64_t)game_match->get(k.tick) : 0;
 				const Vector3 off_aim = aim + aim_offset(2.5 * (1.0 - laid / needed), tick, tank->get(k.slot), g.WANDER_PERIOD_TICKS);
 				cover(off_aim, cmd);
-				if (aim_error(muzzle_at, turret_forward(), off_aim) <= deg_to_rad((double)weapon[k.aim_tolerance_deg])) {
+				// Round 47 (engage E3 ship fix): `or Gunnery.pot_shot_holds(tank)` (the GDScript's own rule, called; absent on a tree without
+				// it = false): a crew braking for the short halt keeps the trigger while the turret lags the wander.
+				static const StringName pot_shot_holds("pot_shot_holds");
+				Script *gs = Object::cast_to<Script>(gscript);
+				if (aim_error(muzzle_at, turret_forward(), off_aim) <= deg_to_rad((double)weapon[k.aim_tolerance_deg]) ||
+						(gs != nullptr && gs->has_method(pot_shot_holds) && (bool)gscript->call(pot_shot_holds, tank))) {
 					const bool fire = clear_to_fire(true, off_aim);
 					cmd->set(k.fire, fire);
 					if (fire) {
