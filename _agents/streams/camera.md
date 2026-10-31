@@ -87,6 +87,14 @@ guard runs an arm, 0 lost; verdict `references/round47/camera/bark-verdict-build
 | **G8 rear ambush first shot -> on screen (never = 20)** | 7.08 s (14 episodes, 4 never) | 8.56 s (11, 4 never) | **FAIL** |
 | G8 all lanes; retreat | 6.73; 6.33 s | 5.91; 6.04 s | PASS |
 
+### Bar K2 FILED (2026-10-30 ~20:15, before any number on 12849-12896; candidate cbb074e10 = main + the landing)
+**Bar K2, the pan's hand-over is smooth (G4b's follow-up; the orchestrator's item 1).** Change: a pan that runs out of PAN_MAX_S
+at speed lands (the spring runs on to the point it stops at) before the glide takes over; no other change (BASE path untouched).
+Arms: BASE `--camera-select-pan=off` v ARM default on cbb074e10, builder3, `~/camera-r47/bark.sh` deciding workloads only: SPLIT
+12849-12860 Terminus, 12861-12872 Locks, 12873-12884 Crossing, 12885-12896 Gorge; ATTACK 12849-12860 Terminus, 12873-12884 Crossing.
+**Deciding:** K2-D snaps from any automatic source but 'select', ARM = 0. **Guards (Bar K's, unchanged):** D1, D2a/b, D3, G1, G4a,
+G4c, G5a/b/c, G6, G7, G9 as Bar K reads them (G2/G3/G8 are not lines here: shipped as read, R47.29).
+
 **SHIPPED ON (R47.29, his "Ship it ON"): 2c60ccd93 merged into main.**
 
 **K5 his acceptance read (the shipped code e4a614eab, builder3, `make camera-replay CAMK_HAND=model|rest|busy`; main's camera =
