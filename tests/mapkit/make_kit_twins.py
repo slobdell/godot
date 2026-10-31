@@ -48,5 +48,29 @@ def parade_traps():
     return len(props) - len(base["props"])
 
 
+def parade_rail():
+    """parade_rail: the Parade Ground with a monorail across it at z = 0 (his overpass pick C): pillars every 20 m from
+    x = +-20 to +-100, each carrying 20 m of beam (`span`), so the floor lane (|x| < 15) runs under a 38 m gap and the
+    pillars stand as posts in the bays. A car parked on the span at x = +-40. Self-mirrored row (x -> -x at z = 0)."""
+    base = json.loads((ROOT / "arenas" / "parade.json").read_text())
+    rail = []
+    for x in (20.0, 40.0, 60.0, 80.0, 100.0):
+        for sign, rot in ((1.0, 90.0), (-1.0, 270.0)):
+            rail.append({"type": "monorail", "position": [sign * x, 0.0], "rotation_deg": rot})
+            rail.append({"type": "monorail_deck", "position": [sign * x, 0.0], "rotation_deg": rot, "span": 20.0,
+                         "car": x == 40.0})
+    twin = dict(base)
+    twin["name"] = "parade_rail"
+    twin["title"] = "The Parade Ground (monorail)"
+    twin["fixture"] = True
+    twin["note"] = ("Mapkit P4 twin of the Parade Ground (tests/mapkit/make_kit_twins.py): a monorail across the middle, "
+                    "pillars 20 m apart, the floor under a 38 m span. A candidate: judged against parade first. " + base.get("note", ""))
+    twin["props"] = list(base["props"]) + rail
+    twin.pop("show", None)
+    (ROOT / "arenas" / "parade_rail.json").write_text(json.dumps(twin, indent=1) + "\n")
+    return len(rail) // 2
+
+
 if __name__ == "__main__":
     print("wrote arenas/parade_traps.json: %d hogs" % parade_traps())
+    print("wrote arenas/parade_rail.json: %d pillars" % parade_rail())

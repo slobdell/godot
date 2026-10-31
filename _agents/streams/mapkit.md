@@ -71,6 +71,14 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **REPORT (2026-10-30 ~18:20; newest first).**
+- **P1b Material Maker trial (R47.28), in progress 19:35:** Material Maker pinned at 7d6daae3c (2026-10-24, shallow clone) in
+  builder3's `~/tools/material-maker`, outside every repo. Export path read first (parse_args.gd): a local `.ptex` only; nothing is
+  fetched unless a `website:` argument is given. **Gotcha:** Godot 4 takes `--export` itself (the Godot 3 flag); use
+  `--export-material`. It renders on builder3's NVIDIA under Xorg :1 (Steam/SPIR-V errors on stdout are harmless: its optional
+  integrations). Recipe `assets/props/trim/trim_sheet.ptex` = ONE inline GLSL shader node -> Material (+ MM's normal_map node): a
+  1024 px sheet in four bands (plate 0-0.40, hazard 0.40-0.55, grime 0.55-0.85, glowing joints 0.85-1). `make mapkit-trim` renders
+  it (MM_COMMIT checked), `make mapkit-trim-adopt` copies the PNGs in. The kit's MapkitYard meshes carry UVs into those bands;
+  `MapkitYard.look = "trim"` (gallery `--kit-look=trim`) dresses them; "plain" is what ships.
 - **P4 in progress (uncommitted at 18:15, waiting on builder3's queue: 6 full checks deep):** his picks built as kit:
   `tank_trap` (hedgehogs, `low`, box 0.9 m under the muzzles, hog drawn 1.2 m), `monorail` (overpass C: 1.4 x 9 m pillar, `hard`,
   carrying 10 m of beam at 9 m; `car` look key), the door look `prop.blast_door` (vault slabs A, leaves glide 1.2 s, red/green

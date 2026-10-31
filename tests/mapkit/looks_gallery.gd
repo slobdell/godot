@@ -51,6 +51,8 @@ const DIRECTIONS := {
 	"built_screen": ["screen", "_built_screen", false],
 	"built_door_shut": ["door", "_built_door", false],
 	"built_door_open": ["door", "_built_door", true],
+	"built_pipes": ["pipes", "_built_pipes", false],
+	"built_crane": ["crane", "_built_crane", false],
 }
 
 var camera := Camera3D.new()
@@ -70,7 +72,13 @@ func _ready() -> void:
 	camera.fov = FOV
 	camera.far = 600.0
 	_aim(float(_flags.text("yaw", "0")))
-	if _flags.has("shots-dir"):
+	if _flags.has("kit-look"):
+		MapkitYard.look = _flags.text("kit-look")  # P1b: plain or the Material Maker trim sheet
+	if _flags.has("screen-look"):
+		SightScreenProp.look = _flags.text("screen-look")
+	if _flags.has("gpu-ms"):
+		_gpu_all()
+	elif _flags.has("shots-dir"):
 		_capture_all(_flags.text("shots-dir"))
 	else:
 		show_direction("door_a_shut")
@@ -104,7 +112,7 @@ func _capture_all(folder: String) -> void:
 		show_direction(id)
 		for i in 8:
 			await RenderingServer.frame_post_draw
-		var path := folder.path_join("looks-%s.png" % id)
+		var path := folder.path_join("looks-%s%s.png" % [id, _flags.text("suffix", "")])
 		var err := get_viewport().get_texture().get_image().save_png(path)
 		print("MAPKIT_LOOKS draws=%d primitives=%d id=%s" % [
 				RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
@@ -112,6 +120,31 @@ func _capture_all(folder: String) -> void:
 		print("screenshot saved: " if err == OK else "screenshot failed: ", path)
 		failed += int(err != OK)
 	get_tree().quit(failed)
+
+
+## C47.10's laptop read: per direction in --only, the viewport's measured GPU time (ms) averaged over 120 frames after
+## 30 to settle, beside an empty floor. MAPKIT_GPU lines; then quits. Run under the laptop lock (mk/mapkit.mk).
+func _gpu_all() -> void:
+	var rid := get_viewport().get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(rid, true)
+	var ids: Array = Array(_flags.text("only", "built_traps").split(","))
+	await get_tree().create_timer(2.0).timeout
+	for id: String in ["empty"] + ids:
+		if id == "empty":
+			if _set != null:
+				_set.free()
+				_set = null
+		else:
+			show_direction(id)
+		for i in 30:
+			await RenderingServer.frame_post_draw
+		var total := 0.0
+		for i in 120:
+			await RenderingServer.frame_post_draw
+			total += RenderingServer.viewport_get_measured_render_time_gpu(rid)
+		print("MAPKIT_GPU id=%s screen=%s kit=%s preset=%s gpu_ms=%.3f frames=120 adapter=%s" % [id, SightScreenProp.look, MapkitYard.look,
+				RenderLevers.preset(), total / 120.0, RenderingServer.get_video_adapter_name()])
+	get_tree().quit()
 
 
 # --- shared helpers -------------------------------------------------------------------------------------------------
@@ -532,7 +565,8 @@ func _built_traps(root: Node3D, _open: bool) -> void:
 
 func _built_monorail(root: Node3D, _open: bool) -> void:
 	for i in 9:
-		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0, {"car": i == 3})
+		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0)
+		_slot(root, "monorail_deck", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0, {"car": i == 3})
 	_dozer(root, Vector3(-5.0, 0, 6.0), 180.0)
 	_dozer(root, Vector3(5.0, 0, -12.0), 200.0)
 
@@ -553,3 +587,19 @@ func _built_door(root: Node3D, open: bool) -> void:
 	look.invoke("setup", [{"width": GATE_WIDTH, "height": GATE_HEIGHT, "depth": 1.6}])
 	look.invoke("set_state", ["closing" if open else "shut"])
 	_dozer(root, Vector3(-3.0, 0, 9.0), 160.0)
+
+
+func _built_pipes(root: Node3D, _open: bool) -> void:
+	# Two runs along x with a 14 m crossing between them (each prop is 10 m along its local z: turned 90 degrees).
+	for x in [-38.0, -28.0, -18.0, 18.0, 28.0, 38.0]:
+		_slot(root, "pipeline", Vector3(x, 0.0, 0.0), 90.0)
+	_dozer(root, Vector3(0.0, 0, 6.0), 180.0)
+
+
+func _built_crane(root: Node3D, _open: bool) -> void:
+	for corner: Vector3 in [Vector3(-11, 0, -14), Vector3(11, 0, -14), Vector3(-11, 0, -2), Vector3(11, 0, -2)]:
+		_slot(root, "gantry_leg", corner, 0.0, {"span": [22.0, 0.0]} if corner.x < 0.0 else {})
+	var stack := ["container_40", "container_40", "container_20"]
+	for i in stack.size():
+		_slot(root, String(stack[i]), Vector3(-5.0 + 7.0 * i, 0.0, -8.0), 90.0, {"stack": 2 - i % 2})
+	_dozer(root, Vector3(14.0, 0, 9.0), 200.0)

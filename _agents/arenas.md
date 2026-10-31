@@ -813,8 +813,11 @@ New looks go to the tap-to-approve page with 2-3 directions per piece before any
 doors A (vault slabs), sight screens C (vent steam), overpass C (monorail), tank traps A (hedgehogs), pipes B (ground
 pipeline), crane A (yard gantry); all 21 door lines kept and voiced. What exists (`game/arena/arena_kit.gd` PROPS, looks in
 `game/theme/arena_kit/mapkit/`, one MultiMesh per kind in `MapkitYard`):
-- `tank_trap` (`low`, box 0.9 m under the muzzles, the hog drawn 1.2 m); `monorail` (a 1.4 x 9 m pillar, `hard`, carrying 10 m of
-  beam at 9 m: only the pillar collides; look key `car`); `sight_screen` (the `sight` class: layer 5, never an obstacle, read by
+- `tank_trap` (`low`, box 0.9 m under the muzzles, the hog drawn 1.2 m); the overpass is TWO types: `monorail` (a 1.4 x 9 m pillar,
+  `hard`) and **`monorail_deck`** (the beam: decoration, its own prop and VisualSlot; `ArenaKit.PROPS["monorail_deck"]`: `size` =
+  [width 2.4, THICKNESS 1.4, default span 10] m, **`deck_y` = 9.0 m, the drawn underside**, `ArenaKit.deck_y(type)`; look keys `span`
+  (metres of beam along its local z) and `car`). **For camera's deck cutaway:** hide the deck prop's VisualSlot only (never a pillar,
+  never a collider); a hidden kit prop leaves its MultiMesh (`mapkit_prop.gd` NOTIFICATION_VISIBILITY_CHANGED), shown again it returns; `sight_screen` (the `sight` class: layer 5, never an obstacle, read by
   `Perception.eye_mask()` and CoverTables while `ArenaKit.sight_on`, `--kit-sight=off`; placeholder strip look until steam is built).
 - Blast doors: `game/match/blast_doors.gd` (the schedule, `BlastDoors.is_open(id, tick)`), `game/arena/arena_doors.gd` (slab,
   carved doorway, one NavigationLink3D on route's bit, the hold); layout key `doors` [{name, group, position, rotation_deg, call}].

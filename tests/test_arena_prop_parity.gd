@@ -138,6 +138,8 @@ func test_every_prop_a_hull_can_touch_is_inside_its_collider() -> void:
 			failures.append("%s overhangs its %.2f x %.2f box by %.2f m at local (%.2f, %.2f, %.2f)" % [kind,
 					m["box"].x, m["box"].z, m["overhang_m"], m["worst"].x, m["worst"].y, m["worst"].z])
 	for kind: String in measured:
+		if ArenaKit.deck_y(kind) > reach_height():
+			continue  # an overhead deck (mapkit's monorail_deck) has nothing a hull can reach: no vertex below the roof, by design
 		assert_true(int(measured[kind]["vertices"]) > 0, "POSITIVE CONTROL: %s's drawn mesh was found and measured" % kind)
 	assert_true(failures.is_empty(), "every colliding prop's reachable geometry is inside its box: %s" % "; ".join(failures))
 

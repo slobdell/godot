@@ -16,8 +16,10 @@ func _layout() -> Dictionary:
 	# Three pillars 10 m apart along x (rotated 90: the beam runs along x), and their mirrors.
 	for i in 3:
 		var x := -10.0 + 10.0 * i
-		data["props"].append({"type": "monorail", "position": [x, AT[1]], "rotation_deg": 90.0, "car": i == 1})
-		data["props"].append({"type": "monorail", "position": [-x, -AT[1]], "rotation_deg": 270.0, "car": i == 1})
+		data["props"].append({"type": "monorail", "position": [x, AT[1]], "rotation_deg": 90.0})
+		data["props"].append({"type": "monorail", "position": [-x, -AT[1]], "rotation_deg": 270.0})
+		data["props"].append({"type": "monorail_deck", "position": [x, AT[1]], "rotation_deg": 90.0, "car": i == 1})
+		data["props"].append({"type": "monorail_deck", "position": [-x, -AT[1]], "rotation_deg": 270.0, "car": i == 1})
 	return data
 
 
@@ -41,17 +43,37 @@ func test_a_rail_is_two_multimeshes_and_the_car_rides_on_its_span() -> void:
 	var holder := Node3D.new()
 	add_to_tree(holder)
 	var scene := GameTheme.scene("prop.monorail")
-	assert_true(scene != null, "prop.monorail is dressed")
+	var deck_scene := GameTheme.scene("prop.monorail_deck")
+	assert_true(scene != null and deck_scene != null, "prop.monorail and prop.monorail_deck are dressed")
+	var decks: Array[Node3D] = []
 	for i in 12:
-		var span := scene.instantiate() as Node3D
-		holder.add_child(span)
-		span.global_position = Vector3(0.0, 0.0, -60.0 + 10.0 * i)
-		span.call("setup", {"type": "monorail", "car": i == 5})
+		var pillar := scene.instantiate() as Node3D
+		holder.add_child(pillar)
+		pillar.global_position = Vector3(0.0, 0.0, -60.0 + 10.0 * i)
+		pillar.call("setup", {"type": "monorail"})
+		var deck := deck_scene.instantiate() as Node3D
+		holder.add_child(deck)
+		deck.global_position = pillar.global_position
+		deck.call("setup", {"type": "monorail_deck", "car": i == 5})
+		decks.append(deck)
 	await wait_physics_frames(3)
 	var yard := MapkitYard.for_node(holder)
 	assert_eq(yard.count("monorail"), 12, "every span")
 	assert_eq(yard.count("monorail_car"), 1, "one car")
-	assert_eq(yard.draws_of("monorail"), 1, "one MultiMesh for the rail")
-	var box := MapkitYard.mesh_of("monorail").get_aabb()
-	assert_near(box.size.z, MapkitYard.SPAN, 0.05, "each span carries 10 m of beam")
-	assert_true(box.position.y + box.size.y >= MapkitYard.BEAM_Y, "the beam is up at %.1f m" % MapkitYard.BEAM_Y)
+	assert_eq(yard.count("monorail_beam"), 12, "a beam per pillar")
+	assert_eq(yard.draws_of("monorail") + yard.draws_of("monorail_beam"), 2, "two MultiMeshes for the whole rail")
+	var beam := MapkitYard.mesh_of("monorail_beam").get_aabb()
+	assert_true(beam.position.y >= MapkitYard.BEAM_Y - 0.01, "the beam is up at %.1f m" % MapkitYard.BEAM_Y)
+	# Camera's deck cutaway hides the deck's slot alone: its beam leaves the batch, the pillar stays.
+	decks[0].visible = false
+	await wait_physics_frames(2)
+	assert_eq(yard.count("monorail_beam"), 11, "a hidden deck leaves the MultiMesh")
+	assert_eq(yard.count("monorail"), 12, "its pillar does not")
+	decks[0].visible = true
+	await wait_physics_frames(2)
+	assert_eq(yard.count("monorail_beam"), 12, "shown again, it is back")
+	assert_true(ArenaKit.deck_y("monorail_deck") > 6.18 and not ArenaKit.collides("monorail_deck"),
+			"the deck is overhead decoration (deck_y %.1f m)" % ArenaKit.deck_y("monorail_deck"))
+	var lengths := yard._entries.values().filter(func(e: Array) -> bool: return e[0] == "monorail_beam").map(
+			func(e: Array) -> float: return (e[1] as Transform3D).basis.z.length())
+	assert_true(lengths.all(func(l: float) -> bool: return is_equal_approx(l, MapkitYard.SPAN)), "10 m of beam each by default")

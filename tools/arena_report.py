@@ -59,7 +59,10 @@ KIT = {  # ArenaKit.PROPS (game/arena/arena_kit.gd): one level [x, height, z], c
     # a route number off a screened map.
     "sight_screen": ([14.0, 6.0, 0.6], "sight", True),
     "tank_trap": ([1.6, 0.9, 1.6], "low", True),  # mapkit P4 (round 47): hedgehogs
-    "monorail": ([1.4, 9.0, 1.4], "hard", True),  # mapkit P4 (round 47): the overpass's pillar (the beam is overhead)
+    "monorail": ([1.4, 9.0, 1.4], "hard", True),  # mapkit P4 (round 47): the overpass's pillar
+    "monorail_deck": ([2.4, 1.4, 10.0], "none", False),  # its deck: overhead decoration (deck_y 9.0)
+    "pipeline": ([1.0, 0.9, 10.0], "low", True),  # mapkit (round 47): pipe runs
+    "gantry_leg": ([1.2, 14.0, 1.2], "hard", True),  # mapkit (round 47): a crane's leg (the beam is overhead)
 }
 # ⚠ THIS TABLE IS A SECOND COPY OF `ArenaKit.PROPS` AND NOTHING CHECKS THAT IT AGREES. A comment where a
 # dependency should be -- the same trap combat found in this file's spawn pitch the same day, and it bit here
