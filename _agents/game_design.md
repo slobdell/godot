@@ -4798,3 +4798,10 @@ distances, and the planner's cost preferring a far framing over his squad. Compa
    3 GB free), so it could freeze, as it did on 10-29."). -> R47.1: seven streams, mapkit included.
 2. Asked: Fable for the group click and the stuck crews? **His pick: "All Opus"** ("Keep Fable quota for later."). -> R47.2.
 3. Asked: settle-exactly-where-you-click (S v6, four failed versions): leave it off? **His pick: "Keep it off (Recommended)".** -> R47.3.
+
+## His picks on mapkit's looks page (2026-10-30 ~17:15 PDT, the page's db; read by the orchestrator)
+
+Page: https://claude.ai/artifact/WSBf2Wmmar3BSocBqqrRpm (dump: `streams/references/round47/mapkit/looks-db-*`). **Looks:** blast door
+**a**, sight screen **c**, overpass **c**, tank traps **a**, and he also picked the two extras, pipe racks **b** and gantry crane **a**
+(so those come off the backlog into scope after the first four). **Announcer door lines: all 21 KEPT** (open_1-4, close_1-4, caught_1-4,
+held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation is approved (production quality, memory). No notes.
