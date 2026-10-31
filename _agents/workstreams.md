@@ -226,6 +226,12 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   a reroute whose path ends far short of a goal reachable nearby plans from the nearest point of the goal's (or the squad's) connected
   region. Main = + route d847b77fd (GREEN 3534/0) + its tip (tests/docs): one main check batched with native's candidate.
 
+- **R47.26 (his pick) The cost cap ships on the laptop too ("Full cost cap now"); orders' NEXT item is the HUD / controls cost with
+  big squads.** Orders' read (laptop UHD 620, lock, his Crossing seed 101, laptop preset, ABBA n 2, 2a1e36a22 + O1 v3 OFF): count cap
+  gangs 20 (2490) v syndicate 17 (5000), frame 52-57 ms (~18 fps), speed 0.95-0.97; cost cap gangs 27 (3435) v 12 (3430), frame 86-123
+  ms (~8-12 fps), p95 110-196, speed 0.79-0.93; HUD / controls 10.7-13.9 v 5.7-6.3 ms (squads of ~7), ticks a frame 2.5-2.9 v 1.6-1.9
+  (compounding), GPU ~equal. The controls' per-frame cost with squads past five goes ahead of O1 v3 / Bar O2; native may help (C++).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_

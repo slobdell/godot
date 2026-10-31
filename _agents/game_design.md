@@ -4819,3 +4819,7 @@ held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation i
    -> R47.22.
 4. **Screenshots on builder3's desktop:** "Yes, use builder3's desktop (Recommended)" — a game window on his logged-in Xorg :1 for ~1 min
    for render targets while builder0 is down. -> R47.23.
+5. **Laptop army size under the cost cap (2026-10-30 evening):** asked with orders' laptop read (UHD 620, his Crossing, n 2 an arm: cost
+   cap = gangs 27 v syndicate 12 vehicles, ~8-12 fps v ~18 today, game clock slipping; most of the cost the HUD / controls with ~7 a
+   squad). **His pick: "Full cost cap now"** — 27 gang vehicles on the laptop right away, even fights, ~10 fps until the controls fix
+   lands. -> R47.26.
