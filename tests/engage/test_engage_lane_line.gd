@@ -52,3 +52,25 @@ func test_the_escape_switch_removes_it() -> void:
 	TankBrain.LANE_CLEAR = saved
 	assert_eq(_lines.size(), 0, "--lane-clear=off: no line (%s)" % [_lines])
 	messages.free()
+
+
+## Round 47 (engage, round 46's leftover): the phone layout's touch map has no `selection_state`; its `selected()` squad's
+## roster is his selection, so the line reaches the phone too.
+class TouchMapStub extends RefCounted:
+	var squad: Squad = null
+	func selected() -> Squad:
+		return squad
+
+
+class DesktopStub extends RefCounted:
+	func selection_state() -> Dictionary:
+		return {"units": ["Green_Hunters_1"]}
+
+
+func test_his_selection_is_read_from_the_touch_map_too() -> void:
+	var touch := TouchMapStub.new()
+	assert_eq(HudMessages.selected_units(touch), [], "nothing selected on the phone: no crews")
+	touch.squad = Squad.new("Hunters", 0, PackedStringArray(["Green_Hunters_1", "Green_Hunters_2"]))
+	assert_eq(HudMessages.selected_units(touch), ["Green_Hunters_1", "Green_Hunters_2"], "the selected squad's crews")
+	assert_eq(HudMessages.selected_units(DesktopStub.new()), ["Green_Hunters_1"], "the desktop controls as before")
+	assert_eq(HudMessages.selected_units(null), [], "no source: no crews")

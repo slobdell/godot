@@ -12,12 +12,12 @@ const MESH_EPSILON := 0.05
 ## navigation map isn't ready yet (it syncs on the physics frame after baking).
 ## An unreachable `to` (say, inside a crate) yields a path to the closest reachable point.
 static func find_path(node: Node3D, from: Vector3, to: Vector3) -> PackedVector3Array:
-	if NativePathing.usable():  # round 28 (native N6.4): the same path natively
+	if NativePathing.usable() and not RouteDoors.any():  # round 28 (native N6.4): the same path natively; round 47 (R5): not while a door needs its mask
 		return NativeBridge.impl.pathing_find_path(node, from, to)
 	if not enabled or not is_ready(node):
 		return PackedVector3Array()
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
-	var path := NavigationServer3D.map_get_path(node.get_world_3d().navigation_map, from, to, true)
+	var path := NavigationServer3D.map_get_path(node.get_world_3d().navigation_map, from, to, true, RouteDoors.mask(node, from))
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.path", Time.get_ticks_usec() - started)
 	return path
@@ -34,7 +34,7 @@ static func find_path(node: Node3D, from: Vector3, to: Vector3) -> PackedVector3
 ## as-possible; a goal across a destroyed bridge is on the mesh and unreachable. The gaps are reported, not compared
 ## against a caller's tolerance; the two booleans only absorb float noise (MESH_EPSILON).
 static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
-	if NativePathing.usable():  # round 28 (native N6.4): the same reading natively
+	if NativePathing.usable() and not RouteDoors.any():  # round 28 (native N6.4): the same reading natively; round 47 (R5): as find_path
 		return NativeBridge.impl.pathing_query(node, from, to)
 	var result := {"points": PackedVector3Array(), "ready": false, "reachable": false, "goal_on_mesh": false,
 			"end_gap_m": INF, "goal_gap_m": INF}
@@ -42,7 +42,7 @@ static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
 		return result
 	var map := node.get_world_3d().navigation_map
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
-	var points := NavigationServer3D.map_get_path(map, from, to, true)
+	var points := NavigationServer3D.map_get_path(map, from, to, true, RouteDoors.mask(node, from))
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.path", Time.get_ticks_usec() - started)
 	var nearest := closest_point(map, to, "query")
@@ -136,3 +136,24 @@ static func closest_point(map: RID, point: Vector3, site := "") -> Vector3:
 		OrderController.add_part("nav.closest", Time.get_ticks_usec() - started)
 		OrderController.add_part("nav.closest@" + site, 0)  # who asks (round 16 A6): a count
 	return closest
+
+
+## Round 47 (route R0, C47.3): **the one door through which anyone asks for a new route for a crew.** Manoeuvre's
+## no-progress watchdog calls it when a crew has made no progress (it never plans itself); route owns what comes back.
+## Today it forces the crew's next drive to re-plan its navmesh route from where it stands (the same route a fresh
+## order would get), on the GDScript and the native-owned execute alike. True when there was a mover to re-plan.
+## `reason` is counted by name (`reroutes`), so a census can say who asked and how often.
+static var reroutes := {}
+
+
+static func reroute(crew: Node, reason: StringName) -> bool:
+	var mover := Movement.of(crew)
+	if mover == null or not (crew is Tank) or not (crew as Tank).alive:
+		return false
+	# The route is re-planned on an EVENT (`Movement._next_waypoint`: the goal moved, off the route, a stall); a goal it
+	# was never planned for is that event on the next tick, here and in the C++ (drive_native.cpp reads `_path_goal`).
+	mover._path_goal = Vector3.INF
+	mover._repath_left = 0.0
+	mover.native_stale |= Movement.STALE_ALL  # a write from outside the native execute (as OrderController's forwarders)
+	reroutes[reason] = int(reroutes.get(reason, 0)) + 1
+	return true

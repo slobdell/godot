@@ -107,6 +107,23 @@ static var LANE_CLEAR := not OS.get_cmdline_user_args().has("--lane-clear=off")
 ## R46.7 (orchestrator): at a post he left by a MOVE, the lane step stays within this of the post (meters); under his
 ## explicit hold or stop the crew never moves for a lane.
 const LANE_POST_STEP := 4.0
+## Round 47 (engage E7, R47.6): HIS ATTACK BEATS RETREAT. Route's R1 trace (his Locks, Hunters_4): a crew at 7 % hull with
+## threats in sight, on the attack_move its element dealt it under his attack, took RETREAT (0.99 when critical) and drove
+## away from his target again and again. With the switch on, an attack_move on HIS side from an element whose task is `attack`
+## leaves RETREAT off the menu; every other order, and every CPU crew (its commander's attacks are routine, not direct:
+## R47.6), keeps the survival rule.
+## `--press-on=on|off`; OFF until native's twin of `_obey` (decide_native.cpp) carries it (C47.6).
+const PRESS_ON_DEFAULT := false
+static var PRESS_ON := _press_on_flag()
+
+
+static func _press_on_flag() -> bool:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg) == "--press-on=on":
+			return true
+		if String(arg) == "--press-on=off":
+			return false
+	return PRESS_ON_DEFAULT
 ## The rings of lane spots, nearest first (a small step beats a drive: a wheeled IFV needs seconds to relocate 16 m).
 const LANE_RINGS: Array[float] = [3.0, 6.0, 10.0, 16.0]
 const LANE_SEARCH_FAR := 16.0
@@ -1162,7 +1179,7 @@ func _order_context() -> Variant:
 		return {"verb": "idle", "goal": post if post != null else _order_home, "target": "", "speed": 1.0,
 				"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 	var context := {"verb": order["verb"], "goal": order["goal"], "target": order["target"], "speed": order["speed"],
-			"player": bool(order.get("player", false)), "target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
+			"player": bool(order.get("player", false)), "his_side": tank.team == OrderFeed.player_team(game_match), "target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 	# Live values: a follow's station moves with the friend, and a group's pace changes as it closes up.
 	if _order_source != null:
 		if order["verb"] == "follow":
@@ -1207,7 +1224,7 @@ func _order_context() -> Variant:
 				station += tangent * (minf(across, TRANSIT_LEAD_MAX_M) + (velocity as Vector3).length() * STATION_LEAD_S)
 			# Round 34 (C34.11): a station over the water stands on my final seat's bank (SlotGround.station_on_goal_side).
 			station = SlotGround.station_on_goal_side(station, order["goal"])
-			context["goal"] = SlotGround.standable_for(tank, station, SlotGround.envelope_of(tank.unit_id))
+			context["goal"] = Movement.buried_station(tank, station, SlotGround.standable_for(tank, station, SlotGround.envelope_of(tank.unit_id)))  # R47.11 (manoeuvre): a station buried in a building follows the squad's track
 			context["transit"] = true
 		if _order_source.has_method("pace_factor"):
 			context["speed"] = clampf(float(_order_source.call("pace_factor", String(tank.name))), 0.2, 1.0)
@@ -2056,6 +2073,14 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 			if ENGAGE_WATER and TankBrain._across_water(my_position, c["position"]):
 				continue
 			in_reach.append(c["name"])
+	# E7 (PRESS_ON): an attack-move on a named target under an ATTACK task (his, or a commander's) is pressed home.
+	var element_context: Variant = s.get("element")
+	# Named or not: the element's contact drill re-deals an attack-move with no target for a tick under his attack (E7's dev
+	# read: one such tick handed RETREAT back, 8 of 30 rows), and it is still his attack.
+	# His side only (Bar E7's amendment, R47.6 "the CPU only for orders its commander gives as direct"): the CPU commander's
+	# own attack tasks are its routine, not a direct order, and keep the survival rule.
+	var pressed := PRESS_ON and verb == "attack_move" and bool(o.get("his_side", false)) and element_context is Dictionary \
+			and String((element_context as Dictionary).get("task", "")) == "attack"
 	var result: Array = []
 	for candidate: Dictionary in candidates:
 		var option: String = candidate["option"]
@@ -2074,7 +2099,7 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 					candidate["score"] = float(candidate["score"]) * lane_edge
 			"attack_move":
 				if option == "RETREAT":
-					if not critical:
+					if not critical or pressed:
 						continue
 					candidate["score"] = 0.99
 				elif target != "" and candidate["target"] != "" and candidate["target"] != target:

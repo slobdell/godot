@@ -400,13 +400,15 @@ test-times: ## Round 29 (I1): write tests/shard_times.txt from the last sharded 
 # Round 33 overnight (planner, the orchestrator's grant): `planner-pytest` joins, LAST: the planner judges' own tests
 # (series_verdict, the distinct-pairs rule, face_pairs). R33.26's face_pairs shipped a 1-face bug that its tests would
 # have caught. Pure Python (<1 s, no Godot, no port, no `user://`), so it needs no exclusion edge.
+# Round 47 (native N3, the orchestrator's grant): `replay-pytest` joins, LAST: tests/replay's Python tests (rules, divergence, the
+# playtest report's selection section). Pure Python, no exclusion edge.
 # Round 26 (C26.6, brains B1): `bridge-pooled` joins -- his bridge drill, seeds 1-3 x start ticks {1,8,15} x both sides
 # (18 runs, ~3.4 min on builder0), judged by tools/tactics/bridge_verdict.py (every surviving crew across; a crew killed
 # while not stuck excused). Round 25 fixed his bridge and nothing guarded it; CP1a fixed it again.
 CHECK_TARGETS := lint-fast lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
                  ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard \
-                 bridge-pooled native-verify-scenarios native-live-guard planner-pytest
+                 bridge-pooled native-verify-scenarios native-live-guard planner-pytest replay-pytest
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #

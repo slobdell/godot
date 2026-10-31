@@ -4798,3 +4798,32 @@ distances, and the planner's cost preferring a far framing over his squad. Compa
    3 GB free), so it could freeze, as it did on 10-29."). -> R47.1: seven streams, mapkit included.
 2. Asked: Fable for the group click and the stuck crews? **His pick: "All Opus"** ("Keep Fable quota for later."). -> R47.2.
 3. Asked: settle-exactly-where-you-click (S v6, four failed versions): leave it off? **His pick: "Keep it off (Recommended)".** -> R47.3.
+
+## His picks on mapkit's looks page (2026-10-30 ~17:15 PDT, the page's db; read by the orchestrator)
+
+Page: https://claude.ai/artifact/WSBf2Wmmar3BSocBqqrRpm (dump: `streams/references/round47/mapkit/looks-db-*`). **Looks:** blast door
+**a**, sight screen **c**, overpass **c**, tank traps **a**, and he also picked the two extras, pipe racks **b** and gantry crane **a**
+(so those come off the backlog into scope after the first four). **Announcer door lines: all 21 KEPT** (open_1-4, close_1-4, caught_1-4,
+held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation is approved (production quality, memory). No notes.
+
+## His answers mid-round 47 (2026-10-30 evening, the question tool)
+
+1. **Snap shots (engage's E3):** asked with the dev numbers (War Rigs' first shot ~0.9 v 1.45 s after a target appears, accuracy 79 v
+   76 %, hits a minute 38 v 29 not beyond noise, friendly hits no higher; the CPU's long guns 83 -> 69 % in his matches; the round goes
+   where the barrel points). **His pick: "Yes, turn them on (Recommended)".** -> R47.20.
+2. **Group click after Bar O failed and O1 v2 bumped (14 m together but 5-20x hull contacts on the way in):** **his pick: "Columns only
+   at the end (Recommended)"** — squads travel as today and form up side by side only in the last stretch before his click. -> R47.21.
+3. **The laptop's skirmish army size (gangs 2490 v 5000 points under the 20-vehicle laptop cap), his words verbatim:**
+   > "ah I was actually wondering this - the units should be capped based on the actual vehicle costs we've established. make skirmish
+   > should assume 1000 credits or whatever the default was in the garage"
+   -> R47.22.
+4. **Screenshots on builder3's desktop:** "Yes, use builder3's desktop (Recommended)" — a game window on his logged-in Xorg :1 for ~1 min
+   for render targets while builder0 is down. -> R47.23.
+5. **Laptop army size under the cost cap (2026-10-30 evening):** asked with orders' laptop read (UHD 620, his Crossing, n 2 an arm: cost
+   cap = gangs 27 v syndicate 12 vehicles, ~8-12 fps v ~18 today, game clock slipping; most of the cost the HUD / controls with ~7 a
+   squad). **His pick: "Full cost cap now"** — 27 gang vehicles on the laptop right away, even fights, ~10 fps until the controls fix
+   lands. -> R47.26.
+6. **Camera select-pan after Bar K (29 of 33 lines; every deciding line passed; G2 / G3 / G8 / G4b failed):** asked in player terms (far
+   squad framed 0.7 v 4.9 s; selection far off-centre 7 v 12 %; flipping between squads 140 m apart leaves the old squad's fight off screen,
+   hits unseen 5 -> 13 % in that test, attacks no worse; clicks during the ~0.7 s sweep misclick more). **His pick: "Ship it ON
+   (Recommended)".** -> R47.29.
