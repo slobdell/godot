@@ -152,7 +152,11 @@ static func rules() -> Dictionary:
 	# R47.22 (round 47, orders): "army_money" = the money was the cap (no 20-a-side count trim on the laptop preset); an older
 	# recording has none and replays with `--army-cap=count` (tests/replay/rules.py), as he played it.
 	return {"lane_clear": (TankBrain as Object).get("LANE_CLEAR") == true, "group_veto": SelectionSquads.GROUP_VETO,
-			"shortfwd": not Traffic.off("shortfwd"), "holdway": not Traffic.off("holdway"), "army_money": not SkirmishMode.COUNT_CAP}
+			"shortfwd": not Traffic.off("shortfwd"), "holdway": not Traffic.off("holdway"), "army_money": not SkirmishMode.COUNT_CAP,
+			# Round 47 (native): the other sim rules that shipped ON this round (tests/replay/rules.py RULES).
+			"press_on": TankBrain.PRESS_ON, "battery_screen": RtsControls.BATTERY_SCREEN, "buried": not Traffic.off("buried"),
+			"holdyield": not Traffic.off("holdyield"), "group_merged": SelectionSquads.merged_mode() == "all",
+			"pot_shot": Gunnery.POT_SHOT}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the

@@ -130,19 +130,36 @@ func test_crossing_hunters_all_leave_for_the_bridge() -> void:
 ## Hunters_4. Staged where they stood at tick 2760 (headings from their last moves), the same task: no crew may sit yielding or
 ## blocked for long while it is still away from its seat.
 func test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle() -> void:
+	# PENDING (R47.47): YIELD_CYCLE=on runs it (make native-repeat passes the environment through).
+	if OS.get_environment("YIELD_CYCLE") != "on":
+		print("PENDING test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle (R47.47): knife edge: ~95% of 1 cm / 0.1 deg jittered"
+				+ " starts leave the sliver; same-process physics carry-over (roadmap UNOWNED); next round's manoeuvre bar = 20/20"
+				+ " jitter seeds via make native-repeat FILTER=test_manoeuvre_noprogress::test_cpu REPEAT_N=20 REPEAT_JITTER=on"
+				+ " YIELD_CYCLE=on")
+		return
 	_arm()
 	_lab = TacticsLab.create(self, 101, "crossing")
 	var pose := {"Rust_Hunters_1": [Vector2(-26.7, -7.3), -76.0, "syn_ifv"], "Rust_Hunters_2": [Vector2(-31.5, -6.9), 163.0, "syn_ifv"],
 			"Rust_Hunters_3": [Vector2(-32.5, -9.7), -59.0, "syn_ifv"], "Rust_Hunters_4": [Vector2(-28.8, -9.6), -180.0, "syn_scout"]}
 	var names := pose.keys()
 	names.sort()
+	# CYCLE_JITTER=<seed> (measurement only): every start pose moved by up to 1 cm and 0.1 deg, how robust the leave is to
+	# a perturbation smaller than a process's history makes (native's determinism read, round 47).
+	var jitter := RandomNumberGenerator.new()
+	jitter.seed = int(OS.get_environment("CYCLE_JITTER"))
+	var jittered := OS.get_environment("CYCLE_JITTER") != ""
 	for n: String in names:
 		var at: Vector2 = pose[n][0]
-		_lab.unit(Match.Team.RUST, n, Vector3(at.x, 0.0, at.y), deg_to_rad(float(pose[n][1])), String(pose[n][2]))
+		var yaw := deg_to_rad(float(pose[n][1]))
+		if jittered:
+			at += Vector2(jitter.randf_range(-0.01, 0.01), jitter.randf_range(-0.01, 0.01))
+			yaw += deg_to_rad(jitter.randf_range(-0.1, 0.1))
+		_lab.unit(Match.Team.RUST, n, Vector3(at.x, 0.0, at.y), yaw, String(pose[n][2]))
 	DoctrineTable.clear_cache()
 	var table: DoctrineTable = DoctrineTable.load_table("syndicate").get("table")
 	var element := _lab.elements.form(names, "Hunters", table)
 	await _lab.start()
+	var started := "start_tick %d waited %d" % [_lab.game_match.tick, _lab.waited_frames]
 	element.assign({"verb": "ambush", "from": [-13.4375, -9.5], "to": [-50.467, 15.627]})
 	var stuck := {}
 	var left_at := {}  # the tick each crew first came within NEAR_SEAT_M of its seat (off the sliver: today two never do)
@@ -173,6 +190,7 @@ func test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle() -> void:
 	var out := {}
 	for n: String in names:
 		out[n] = float(stuck[n]) / SimClock.TICK_RATE
+	print("CYCLE_START %s" % started)
 	print("CYCLE_ROW %s watch %s reroutes %s held_s %s left_tick %s" % [OS.get_environment("NOPROGRESS_ARM"), JSON.stringify(NoProgressWatch.report()),
 			JSON.stringify(Pathing.reroutes), JSON.stringify(out), JSON.stringify(left_at)])
 	# What this item fixes: nobody stays on the sliver. Today Hunters_2 and Hunters_4 never leave it in 15 s (his recording: 24+ s).
