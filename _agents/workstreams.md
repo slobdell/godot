@@ -320,6 +320,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   sub-profile of situation_core's GDScript callbacks (AiTickCache.faced_by, CoverMap.clear_line_coarse) decides; else (b) parks for the
   round as a next-round note. The twin freeze told to engage does not apply.
 
+- **R47.36 Merged to main: orders d9151bad5 (inp rows, the recipient cue, battery screen ON, merged lay OFF; GREEN 3536/0; the cue's
+  shots 778c7d397 looked at by the orchestrator: white rings read clearly, not loud) and mapkit 39c7dba53 (blast doors with route's
+  nav-layer contract, the `sight` class with `Perception.eye_mask()` behind ArenaKit.sight_on, door calls 133 clips, traps / monorail /
+  door looks, candidate arenas parade_rail / parade_traps; GREEN 3548/0).** Relays: engage (C47.7: C++ LOS, match.gd `_clear_view` and
+  visibility_field still ray WORLD_MASK), native (doors' C++ mask; eye_mask in C++ LOS; GRANT the two match.gd / visibility_field ray
+  call sites for the mask change), manoeuvre (the doors' `overstay` event). Main check of the batch pending.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
