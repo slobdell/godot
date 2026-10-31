@@ -177,16 +177,15 @@ func test_decide_is_the_gdscript() -> void:
 				var pair: Array = cases[ci]
 				TankBrain.SCOUT_FIGHT_BACK = flag_saved and ci != flag_off
 				TankBrain.LANE_CLEAR = lane_saved and (asked + ci) % 5 != 0
+				var unpressed_option := ""
 				if press_saved != null:
 					(TankBrain as Object).set("PRESS_ON", (asked + ci) % 3 != 0)
 					if bool((TankBrain as Object).get("PRESS_ON")):
 						BrainSwitches.native_decide = false
 						(TankBrain as Object).set("PRESS_ON", false)
-						var unpressed := TankBrain.decide(pair[0], pair[1])
+						var unpressed: Dictionary = TankBrain.decide((pair[0] as Dictionary).duplicate(true), (pair[1] as Dictionary).duplicate(true))
 						(TankBrain as Object).set("PRESS_ON", true)
-						if String(unpressed["choice"]["option"]) == "RETREAT" \
-								and String(TankBrain.decide(pair[0], pair[1])["choice"]["option"]) != "RETREAT":
-							pressed_moved += 1
+						unpressed_option = String((unpressed.get("choice", {}) as Dictionary).get("option", ""))
 				BrainSwitches.native_decide = false
 				var t0 := Time.get_ticks_usec()
 				var live := TankBrain.decide(pair[0], pair[1])
@@ -197,6 +196,8 @@ func test_decide_is_the_gdscript() -> void:
 				native_usec += Time.get_ticks_usec() - t0
 				asked += 1
 				var option := String(live["choice"]["option"])
+				if unpressed_option == "RETREAT" and option != "RETREAT":
+					pressed_moved += 1
 				options[option] = int(options.get(option, 0)) + 1
 				var o_lane: Dictionary = (pair[0] as Dictionary).get("order", {}) if (pair[0] as Dictionary).get("order") is Dictionary else {}
 				if option == "CLEAR_LANE" and TankBrain.LANE_CLEAR and (String((pair[1] as Dictionary).get("target", "")) == "" \
