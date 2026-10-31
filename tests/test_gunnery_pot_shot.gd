@@ -45,20 +45,19 @@ func test_a_pot_shot_goes_before_the_fix_completes() -> void:
 	assert_true(on >= int(Gunnery.POT_SHOT_AFTER_S * SimClock.TICK_RATE), "never before POT_SHOT_AFTER_S of lay (%d ticks)" % on)
 
 
-## The check's own find (d4cf542c7, test_rules_spread): a halting railgun crew's pot shot dropped its trigger for a tick, the
-## plant took that as the shot gone and cancelled the halt, and the next pot shot left at 99 m on a hull doing 11 m/s. A pot
-## shot never goes where R2's short halt would stop the hull for the round; close in, or still, or under his plain move it may.
-func test_a_pot_shot_waits_where_the_short_halt_would_stop() -> void:
+## The check's own find (d4cf542c7, test_rules_spread): a railgun crew braking for its long pot shot dropped the trigger the
+## tick the barrel lagged the wander, the plant read that as the shot gone and cancelled the halt, and its cooldown let the
+## next round leave at 98 m on 11 m/s. While the plant brakes and the hull rolls, a pot shot holds its trigger.
+func test_a_pot_shot_holds_its_trigger_while_the_hull_brakes() -> void:
 	var arena := add_to_tree(ARENA.instantiate())
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	game_match.set_meta("arena", arena)
 	var crew := game_match.spawn_tank("Green_Rail_1", 0, Match.Team.GREEN, "syn_tank")
 	crew.place(Vector3(-110.0, 0.0, 90.0), 0.0)
-	var far := Vector3(-110.0, 0.0, -9.0)  # 99 m
-	var near := Vector3(-110.0, 0.0, 70.0)  # 20 m: inside SHORT_HALT_MIN_RANGE of the band
 	crew._speed = 0.8 * crew.max_forward_speed
-	assert_true(Gunnery.pot_shot_halts(crew, far), "rolling, 99 m: the halt's round, no pot shot")
-	assert_true(not Gunnery.pot_shot_halts(crew, near), "rolling, 20 m: close in a crew rolls and shoots")
+	assert_true(not Gunnery.pot_shot_holds(crew), "rolling, no halt: the barrel decides, as before")
+	crew.short_halt_seconds = 1.0
+	assert_true(Gunnery.pot_shot_holds(crew), "rolling, braking for the round: the trigger holds")
 	crew._speed = 0.0
-	assert_true(not Gunnery.pot_shot_halts(crew, far), "still, 99 m: nothing to halt for")
+	assert_true(not Gunnery.pot_shot_holds(crew), "steady: the round goes only with the barrel on it")
